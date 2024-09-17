@@ -11,7 +11,7 @@
 		<!-- Date  : 06/04/2023 -->
 		<wavebackground></wavebackground>
 		<div id="waveTitle">
-			<img id="photo" src="photo1.jpg" alt="">
+			<div id="photo"></div>
 			<h1>Bienvenue sur mon portfolio</h1>
 			<a href="/wave/wave.html" style="font-size: 3vh;">Vous n'aimez pas les couleurs? Réactualisez la page ou choisissez les vôtres!</a>
 			
@@ -202,7 +202,10 @@
 
 			#photo {
 				border-radius: 50%;
-				width: 10vh;
+				width: 8vw;
+				margin-left: calc(50% - 4vw);
+				border: solid 5px black;
+				background-image: url("photo1.jpg");
 			}
 
 			#photo:hover {
@@ -257,7 +260,7 @@
 				text-align: center;
 				text-shadow: 2px 2px black;
 				font-family: Arial, Helvetica, sans-serif;
-				font-size: 5vh;
+				font-size: 4vh;
 				text-decoration: none;
 			}
 
