@@ -48,6 +48,7 @@
                 <br>
                 <label for="rangeInput">Select a value Clock:</label>
                 <input type="range" id="rand9" min="-0.1" max="0.1" value="0.01" step="0.0001">
+                <input type="button" onclick="exportWave">
             </form>
 		</div>
 		<h2 id="waveAuthor">ttrossea</h2>
@@ -236,6 +237,71 @@
 				document.getElementsByTagName('wavebackground')[0].innerHTML = "<svg id='svgBg' viewbox='0 0 800 500' width='800' height='500' preserveAspectRatio='none'>" + rootSvg.innerHTML + "</svg>";
 				clock += rand9;
 			}
+
+            function setCookie(name, value, hours) {
+                let expires = "";
+                if (days) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (hours * 60 * 60 * 1000)); // Convert days to milliseconds
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "") + expires + "; path=/"; // Set the cookie
+            }
+
+            function exportWave()
+            {
+                var rangeInput = document.getElementById('rand1');
+                setCookie("rand1", rangeInput.value);
+                rangeInput = document.getElementById('rand2');
+                setCookie("rand2", rangeInput.value);
+                rangeInput = document.getElementById('rand3');
+                setCookie("rand3", rangeInput.value);
+                rangeInput = document.getElementById('rand4');
+                setCookie("rand4", rangeInput.value);
+                rangeInput = document.getElementById('rand5');
+                setCookie("rand5", rangeInput.value);
+                rangeInput = document.getElementById('rand6');
+                setCookie("rand6", rangeInput.value);
+                rangeInput = document.getElementById('rand7');
+                setCookie("rand7", rangeInput.value);
+                rangeInput = document.getElementById('rand8');
+                setCookie("rand8", rangeInput.value);
+                rangeInput = document.getElementById('rand9');
+                setCookie("rand9", rangeInput.value);
+            }
+
+            function getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';'); // Split cookies into an array
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length); // Trim whitespace
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length); // Return cookie value
+                }
+                return null; // Return null if cookie not found
+            }
+
+            function importWave()
+            {
+                var rangeInput = document.getElementById('rand1');
+                rangeInput.value = getCookie("rand1");
+                rangeInput = document.getElementById('rand2');
+                rangeInput.value = getCookie("rand2");
+                rangeInput = document.getElementById('rand3');
+                rangeInput.value = getCookie("rand3");
+                rangeInput = document.getElementById('rand4');
+                rangeInput.value = getCookie("rand4");
+                rangeInput = document.getElementById('rand5');
+                rangeInput.value = getCookie("rand5");
+                rangeInput = document.getElementById('rand6');
+                rangeInput.value = getCookie("rand6");
+                rangeInput = document.getElementById('rand7');
+                rangeInput.value = getCookie("rand7");
+                rangeInput = document.getElementById('rand8');
+                rangeInput.value = getCookie("rand8");
+                rangeInput = document.getElementById('rand9');
+                rangeInput.value = getCookie("rand9");
+            }
 
 			var clock = 0;
 			var timeout = 20;

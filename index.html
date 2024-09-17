@@ -174,8 +174,51 @@
 				clock += rand9;
 			}
 
+			function getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';'); // Split cookies into an array
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length); // Trim whitespace
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length); // Return cookie value
+                }
+                return null; // Return null if cookie not found
+            }
+
+			function importWave()
+            {
+                tmp = getCookie("rand1");
+				if (tmp != null)
+					rand1 = parseInt(tmp, 10);
+				tmp = getCookie("rand2");
+				if (tmp != null)
+					rand2 = parseInt(tmp, 10);
+				tmp = getCookie("rand3");
+				if (tmp != null)
+					rand3 = parseInt(tmp, 10);
+				tmp = getCookie("rand4");
+				if (tmp != null)
+					rand4 = parseFloat(tmp, 10);
+				tmp = getCookie("rand5");
+				if (tmp != null)
+					rand5 = parseFloat(tmp, 10);
+				tmp = getCookie("rand6");
+				if (tmp != null)
+					rand6 = parseFloat(tmp, 10);
+				tmp = getCookie("rand7");
+				if (tmp != null)
+					rand7 = parseInt(tmp, 10);
+				tmp = getCookie("rand8");
+				if (tmp != null)
+					rand8 = parseInt(tmp, 10);
+				tmp = getCookie("rand9");
+				if (tmp != null)
+					rand9 = parseFloat(tmp, 10);
+            }
+
 			var clock = 0;
 			var timeout = 20;
+			importWave();
 			setInterval(refreshSvg, timeout);
 			var css_redFg = randomIntFromInterval(0, 255);
 			var css_greenFg = randomIntFromInterval(0, 255);
