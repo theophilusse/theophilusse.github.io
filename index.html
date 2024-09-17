@@ -17,7 +17,6 @@
 				return Math.floor(Math.random() * (max - min + 1) + min);
 			}
 
-			const rndInt = randomIntFromInterval(1, 6);
 			var rand1 = randomIntFromInterval(0, 255);
 			var rand2 = randomIntFromInterval(0, 255);
 			var rand3 = randomIntFromInterval(0, 255);
@@ -27,6 +26,7 @@
 			var rand7 = randomIntFromInterval(0, 10) + 20;
 			var rand8 = randomIntFromInterval(0, 10) + 18;
 			var rand9 = (Math.random() * 100) / 1000.0;
+
 			function waves(x, oscillationNumber)
 			{
 				return Math.sin(x * 3.1415 * oscillationNumber);
@@ -56,26 +56,16 @@
 						let clock_y = y + clock;
 						let waveValue_x = waves((1 / dimY) * clock_y, rand4);
 						let waveValue_y = waves((1 / dimX) * clock_x, rand5);
-						let ptX = originX + (x + waveValue_x) * scale;// + Math.random() * 15;
-						let ptY = originY + (y + waveValue_y * rand6) * scale;// + Math.random() * 15;
+						let ptX = originX + (x + waveValue_x) * scale;
+						let ptY = originY + (y + waveValue_y * rand6) * scale;
 
 						deltaX = waveValue_x - prevValue_x;
 						deltaY = waveValue_y - prevValue_y;
 
-						//{% if random(1) == 1 %}
 						if (preConst == 0)
 							colorFactor = deltaY + 1;
-						else //{% else %}
+						else
 							colorFactor = ((waveValue_y + 1.5) / 2);
-						//{% endif %}
-
-						//colorFactor = ((deltaX + deltaY) / 2) + 1;
-						//colorFactor += deltaY + 1;
-						//waveValue_y *= -1;
-						//colorFactor += ((waveValue_x + 1) / 5);
-						//colorFactor += (waveValue_y / waveValue_x) + 1;
-						//colorFactor += (waveValue_x / waveValue_y);
-						//colorFactor += ((waveValue_x + 1) / ((waveValue_y + 1) / 2));
 						let color = "rgb(" + (colorFactor * baseColor[0]) + "," + (colorFactor * baseColor[1]) + "," + (colorFactor * baseColor[2]) + ");";
 						point.push({
 							x: ptX,
@@ -174,8 +164,29 @@
 			var clock = 0;
 			var timeout = 20;
 			setInterval(refreshSvg, timeout);
+			var css_redFg = randomIntFromInterval(0, 255);
+			var css_greenFg = randomIntFromInterval(0, 255);
+			var css_blueFg = randomIntFromInterval(0, 255);
+			var css_redBg = randomIntFromInterval(0, 255);
+			var css_greenBg = randomIntFromInterval(0, 255);
+			var css_blueBg = randomIntFromInterval(0, 255);
+			document.documentElement.style.setProperty('--colorRed_fg-color', css_redFg);
+			document.documentElement.style.setProperty('--colorGreen_fg-color', css_greenFg);
+			document.documentElement.style.setProperty('--colorBlue_fg-color', css_blueFg);
+			document.documentElement.style.setProperty('--colorRed_bg-color', css_redBg);
+			document.documentElement.style.setProperty('--colorGreen_bg-color', css_greenBg);
+			document.documentElement.style.setProperty('--colorBlue_bg-color', css_blueBg);
 		</script>
 		<style>
+			html {
+				--colorRed_fg-color: 128;
+				--colorGreen_fg-color: 128;
+				--colorBlue_fg-color: 128;
+				--colorRed_bg-color: 128;
+				--colorGreen_bg-color: 128;
+				--colorBlue_bg-color: 128;
+			}
+
 			svg {
 				position: absolute;
 				top: 0px;
@@ -185,20 +196,14 @@
 				background-color: black;
 			}
 
-			$colorRed_fg: random(255);
-			$colorGreen_fg: random(255);
-			$colorBlue_fg: random(255);
-			$colorRed_bg: random(255);
-			$colorGreen_bg: random(255);
-			$colorBlue_bg: random(255);
 			polyline {
-				stroke: rgb($colorRed_fg, $colorGreen_fg, $colorBlue_fg);
+				stroke: rgb(var(--colorRed_fg-color), var(--colorGreen_fg-color), var(--colorBlue_fg-color));
 				stroke-width: 1px;
 			}
 
 			#waveTitle {
 				position: relative;
-				background-color: rgba($colorRed_bg, $colorGreen_bg, $colorBlue_bg, 0.5);
+				background-color: rgba(var(--colorRed_bg-color), var(--colorGreen_bg-color), var(--colorBlue_bg-color), 0.5);
 				width: 25%;
 				left: 38%;
 				top: 25vh;
@@ -209,8 +214,8 @@
 
 			#waveTitle h1 {
 				font-family: 'Brush Script MT',cursive;
-				color: rgb($colorRed_fg, $colorGreen_fg, $colorBlue_fg);
-				text-shadow: 3px 3px rgb(255 - $colorRed_fg, 255 - $colorGreen_fg, 255 - $colorBlue_fg);
+				color: rgb(var(--colorRed_fg-color), var(--colorGreen_fg-color), var(--colorBlue_fg-color));
+				text-shadow: 3px 3px rgb(255 - var(--colorRed_fg-color), 255 - var(--colorGreen_fg-color), 255 - var(--colorBlue_fg-color));
 				font-size: 5vh;
 				position: relative;
 				display: block;
@@ -218,20 +223,20 @@
 			}
 
 			#waveTitle a {
-				background-color: rgb(255 - $colorRed_bg, 255 - $colorGreen_bg, 255 - $colorBlue_bg);
-				color: rgb($colorRed_bg, $colorGreen_bg, $colorBlue_bg);
+				background-color: rgb(255 - var(--colorRed_bg-color), 255 - var(--colorGreen_bg-color), 255 - var(--colorBlue_bg-color));
+				color: rgb(var(--colorRed_bg-color), var(--colorGreen_bg-color), var(--colorBlue_bg-color));
 				padding: 10px 10% 10px 10%;
 				border-radius: 30px;
-				border: 3px solid rgb($colorRed_fg, $colorGreen_fg, $colorBlue_fg);
+				border: 3px solid rgb(var(--colorRed_fg-color), var(--colorGreen_fg-color), var(--colorBlue_fg-color));
 				display: block;
 				text-align: center;
 				text-shadow: 2px 2px black;
 			}
 
 			#waveTitle a:hover {
-				background-color: rgb($colorRed_bg, $colorGreen_bg, $colorBlue_bg);
-				color: rgb(255 - $colorRed_bg, 255 - $colorGreen_bg, 255 - $colorBlue_bg);
-				border: 3px solid rgb(255 - $colorRed_fg, 255 - $colorGreen_fg, 255 - $colorBlue_fg);
+				background-color: rgb(var(--colorRed_bg-color), var(--colorGreen_bg-color), var(--colorBlue_bg-color));
+				color: rgb(255 - var(--colorRed_bg-color), 255 - var(--colorGreen_bg-color), 255 - var(--colorBlue_bg-color));
+				border: 3px solid rgb(255 - var(--colorRed_fg-color), 255 - var(--colorGreen_fg-color), 255 - var(--colorBlue_fg-color));
 				text-shadow: 1px 1px black;
 			}
 
