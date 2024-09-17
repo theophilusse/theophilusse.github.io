@@ -6,12 +6,10 @@
         <link rel="stylesheet" href="style.css" />
 
         <!-- React + DOM -->
-        <!--script src="https://unpkg.com/react@0.14.3/dist/react.js"></script-->
-        <!--script src="https://unpkg.com/react-dom@0.14.3/dist/react-dom.js"></script-->
-		<script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-		<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+		<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+		<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
         <!-- Babel -->
-        <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
         <!--script src="./rt.js"></script-->
     </head>
     <body>
@@ -2037,8 +2035,6 @@ function pixelMapToJSX(pix, dimX, dimY, dimPix)
 			pageTitleOffset = 0;
 	}
 
-	//const { createRoot } = ReactDOMClient; // Use ReactDOMClient for createRoot
-	import ReactDOM from 'react-dom/client';
 	//const UIroot = createRoot(document.getElementById("root"));
 	//const UIheader = createRoot(document.getElementById("header"));
 	const UIroot = ReactDOM.createRoot(document.getElementById("root"));
