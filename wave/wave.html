@@ -113,9 +113,9 @@
 						deltaX = waveValue_x - prevValue_x;
 						deltaY = waveValue_y - prevValue_y;
 
-						/*if (preConst == 0)
+						if (preConst == 0)
 							colorFactor = deltaY + 1;
-						else*/
+						else
 							colorFactor = ((waveValue_y + 1.5) / 2);
 						let color = "rgb(" + (colorFactor * baseColor[0]) + "," + (colorFactor * baseColor[1]) + "," + (colorFactor * baseColor[2]) + ");";
 						point.push({
@@ -183,6 +183,8 @@
                 rand8 = parseInt(rangeInput.value);
                 rangeInput = document.getElementById('rand9');
                 rand9 = parseFloat(rangeInput.value);
+                rangeInput = document.getElementById('shadow');
+                preConst = rangeInput.checked;
 
 				var svgName = 'svgBg';
 				var rootSvg = document.createElement('svg');
