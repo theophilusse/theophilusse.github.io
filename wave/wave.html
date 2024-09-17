@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>
+			Portfolio
+		</title>
+	</head>
+	<body>
+		<!--    W  A  V  E  S   -->
+		<!-- Author: ttrossea   -->
+		<!-- Date  : 06/04/2023 -->
+		<wavebackground></wavebackground>
+		<div id="waveTitle">
+			<form action="">
+                <label for="rangeInput">Select a value:</label>
+                <input type="range" id="rangeInput" min="0" max="100" value="50" step="1">
+            </form>
+		</div>
+		<h2 id="waveAuthor">ttrossea</h2>
+		<script>
+			var preConst = parseInt(Math.random() * 2);
+		
+			function randomIntFromInterval(min, max) { // min and max included 
+				return Math.floor(Math.random() * (max - min + 1) + min);
+			}
+
+			var rand1 = randomIntFromInterval(0, 255);
+			var rand2 = randomIntFromInterval(0, 255);
+			var rand3 = randomIntFromInterval(0, 255);
+			var rand4 = Math.random() * 9;
+			var rand5 = Math.random() * 8;
+			var rand6 = Math.random() * 2 + 1;
+			var rand7 = randomIntFromInterval(0, 10) + 20;
+			var rand8 = randomIntFromInterval(0, 10) + 18;
+			var rand9 = (Math.random() * 100) / 1000.0;
+
+			function waves(x, oscillationNumber)
+			{
+				return Math.sin(x * 3.1415 * oscillationNumber);
+			}
+
+			function createGrid(dimX, dimY, scale, clock)
+			{
+				let x;
+				let y;
+				let originX = -100;
+				let originY = -180;
+				let z;
+				var point = new Array;
+				var baseColor = [ rand1, rand2, rand3 ];
+				var deltaX;
+				var deltaY;
+				var prevValue_x = 0;
+				var prevValue_y = 0;
+				z = 0;
+				y = 0;
+				while (y < dimY)
+				{
+					x = 0;
+					while (x < dimX)
+					{
+						let clock_x = x + clock;
+						let clock_y = y + clock;
+						let waveValue_x = waves((1 / dimY) * clock_y, rand4);
+						let waveValue_y = waves((1 / dimX) * clock_x, rand5);
+						let ptX = originX + (x + waveValue_x) * scale;
+						let ptY = originY + (y + waveValue_y * rand6) * scale;
+
+						deltaX = waveValue_x - prevValue_x;
+						deltaY = waveValue_y - prevValue_y;
+
+						if (preConst == 0)
+							colorFactor = deltaY + 1;
+						else
+							colorFactor = ((waveValue_y + 1.5) / 2);
+						let color = "rgb(" + (colorFactor * baseColor[0]) + "," + (colorFactor * baseColor[1]) + "," + (colorFactor * baseColor[2]) + ");";
+						point.push({
+							x: ptX,
+							y: ptY,
+							id: z,
+							color: color
+						});
+						x++;
+						z++;
+						prevValue_x = waveValue_x;
+						prevValue_y = waveValue_y;
+					}
+					y++;
+				}
+				return point;
+			}
+
+			function buildPolyline(name, dimX, dimY)
+			{
+				var rootSvg;
+				var index;
+				var list;
+				var x;
+				var y;
+
+				list = [];
+				index = 0;
+				y = 0;
+				while (y < dimY)
+				{
+					x = 0;
+					while (x < dimX)
+					{
+						elm = document.createElement('polyline');
+						elm.setAttribute('id', 'pt-'+index);
+						list.push(elm);
+						index++;
+						x++;
+					}
+					y++;
+				}
+				return list;
+			}
+
+			function refreshSvg()
+			{
+				var svgName = 'svgBg';
+				var rootSvg = document.createElement('svg');
+				rootSvg.setAttribute('id', svgName);
+				var dimX = rand7;
+				var dimY = rand8;
+				var scale = 50;
+				var point = createGrid(dimX, dimY, scale, clock);
+				var svgCopy;
+				var polyline = buildPolyline(svgName, dimX, dimY);
+				var offsetA;
+				var offsetB;
+				var offsetC;
+				var offsetD;
+				var coordX = -1;
+				var coordY = 0;
+				var index = 0;
+
+				while (index < polyline.length)
+				{
+					coordX++;
+					if (coordX >= dimX - 1)
+					{
+						coordY++;
+						coordX = 0;
+						if (coordY >= dimY - 1)
+						index = polyline.length;
+					}
+					offsetA = coordY * dimX + coordX;
+					offsetB = (coordY + 1) * dimX + coordX;
+					offsetC = (coordY + 1) * dimX + (coordX + 1);
+					offsetD = coordY * dimX + (coordX + 1);
+					if (offsetA < point.length && offsetB < point.length)
+					{
+						polyline[index].setAttribute('points',
+						point[offsetA].x + ',' + point[offsetA].y + ' ' +
+						point[offsetB].x + ',' + point[offsetB].y + ' ' +
+						point[offsetC].x + ',' + point[offsetC].y + ' ' +
+						point[offsetD].x + ',' + point[offsetD].y);
+						polyline[index].setAttribute('style', 'fill: ' + point[offsetA].color);
+					}
+					index++;
+				}
+				index = 0;
+				while (index < polyline.length)
+				rootSvg.appendChild(polyline[index++]);
+				document.getElementsByTagName('wavebackground')[0].innerHTML = "<svg id='svgBg' viewbox='0 0 800 500' width='800' height='500' preserveAspectRatio='none'>" + rootSvg.innerHTML + "</svg>";
+				clock += rand9;
+			}
+
+			var clock = 0;
+			var timeout = 20;
+			setInterval(refreshSvg, timeout);
+			var css_redFg = randomIntFromInterval(0, 255);
+			var css_greenFg = randomIntFromInterval(0, 255);
+			var css_blueFg = randomIntFromInterval(0, 255);
+			var css_redBg = randomIntFromInterval(0, 255);
+			var css_greenBg = randomIntFromInterval(0, 255);
+			var css_blueBg = randomIntFromInterval(0, 255);
+			document.documentElement.style.setProperty('--colorRed_fg-color', css_redFg);
+			document.documentElement.style.setProperty('--colorGreen_fg-color', css_greenFg);
+			document.documentElement.style.setProperty('--colorBlue_fg-color', css_blueFg);
+			document.documentElement.style.setProperty('--colorRed_bg-color', css_redBg);
+			document.documentElement.style.setProperty('--colorGreen_bg-color', css_greenBg);
+			document.documentElement.style.setProperty('--colorBlue_bg-color', css_blueBg);
+		</script>
+		<style>
+			html {
+				--colorRed_fg-color: 128;
+				--colorGreen_fg-color: 128;
+				--colorBlue_fg-color: 128;
+				--colorRed_bg-color: 128;
+				--colorGreen_bg-color: 128;
+				--colorBlue_bg-color: 128;
+			}
+
+			svg {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: 100%;
+				background-color: black;
+			}
+
+			polyline {
+				stroke: rgb(var(--colorRed_fg-color), var(--colorGreen_fg-color), var(--colorBlue_fg-color));
+				stroke-width: 1px;
+			}
+
+			#waveTitle {
+				position: relative;
+				background-color: rgba(var(--colorRed_bg-color), var(--colorGreen_bg-color), var(--colorBlue_bg-color), 0.7);
+				width: 90vw;
+				top: 10vh;
+				margin: auto;
+				padding: 15px;
+				border-radius: 15px;
+				border: 3px solid black;
+			}
+
+			#waveTitle h1 {
+				font-family: 'Brush Script MT',cursive;
+				/*color: rgb(var(--colorRed_fg-color), var(--colorGreen_fg-color), var(--colorBlue_fg-color));*/
+				color: black;
+				text-shadow: 3px 3px rgb(255 - var(--colorRed_fg-color), 255 - var(--colorGreen_fg-color), 255 - var(--colorBlue_fg-color));
+				font-size: 5vh;
+				position: relative;
+				display: block;
+				text-align: center;
+				background-color: chartreuse;
+			}
+
+			#waveTitle a {
+				background-color: rgb(25,25,25);
+				color: rgb(255, 255, 255);
+				padding: 10px 10% 10px 10%;
+				border-radius: 30px;
+				border: 3px solid rgb(var(--colorRed_fg-color), var(--colorGreen_fg-color), var(--colorBlue_fg-color));
+				margin-top: 10px;
+				display: block;
+				text-align: center;
+				text-shadow: 2px 2px black;
+				font-family: Arial, Helvetica, sans-serif;
+				font-size: 5vh;
+				text-decoration: none;
+			}
+
+			#waveTitle a:hover {
+				background-color: rgb(var(--colorRed_bg-color), var(--colorGreen_bg-color), var(--colorBlue_bg-color));
+				color: rgb(255 - var(--colorRed_bg-color), 255 - var(--colorGreen_bg-color), 255 - var(--colorBlue_bg-color));
+				/*border: 3px solid rgb(255 - var(--colorRed_fg-color), 255 - var(--colorGreen_fg-color), 255 - var(--colorBlue_fg-color));*/
+				text-shadow: 1px 1px black;
+			}
+
+			#waveAuthor {
+				position: fixed;
+				bottom: 0px;
+				right: 0px;
+				margin: 0;
+				font-size: 15px;
+				background-color: rgba(255, 255, 255, 0.5);
+				padding: 2px;
+				color: black;
+				line-height: 15px;
+			}
+		</style>
+	</body>
+</html>
