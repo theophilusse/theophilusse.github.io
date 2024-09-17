@@ -13,6 +13,21 @@
 		<script>
 			var preConst = parseInt(Math.random() * 2);
 		
+			function randomIntFromInterval(min, max) { // min and max included 
+				return Math.floor(Math.random() * (max - min + 1) + min);
+			}
+
+			const rndInt = randomIntFromInterval(1, 6);
+			var rand1 = randomIntFromInterval(0, 255);
+			var rand2 = randomIntFromInterval(0, 255);
+			var rand3 = randomIntFromInterval(0, 255);
+			var rand4 = Math.random() * 9;
+			var rand5 = Math.random() * 8;
+			var rand6 = Math.random() * 2 + 1;
+			var rand7 = Math.random() * 10 + 20;
+			var rand8 = Math.random() * 10 + 18;
+			var rand9 = (Math.random() * 100) / 1000.0;
+			var rand10 = rand(0, 255);
 			function waves(x, oscillationNumber)
 			{
 				return Math.sin(x * 3.1415 * oscillationNumber);
@@ -26,7 +41,7 @@
 				let originY = -180;
 				let z;
 				var point = new Array;
-				var baseColor = [ <?php echo rand(0, 255); ?>, <?php echo rand(0, 255); ?>, <?php echo rand(0, 255); ?> ];
+				var baseColor = [ rand1, rand2, rand3 ];
 				var deltaX;
 				var deltaY;
 				var prevValue_x = 0;
@@ -40,10 +55,10 @@
 					{
 						let clock_x = x + clock;
 						let clock_y = y + clock;
-						let waveValue_x = waves((1 / dimY) * clock_y, <?php echo rand(0, 8); ?>.<?php echo rand(0, 9); ?>);
-						let waveValue_y = waves((1 / dimX) * clock_x, <?php echo rand(0, 7); ?>.<?php echo rand(0, 9); ?>);
+						let waveValue_x = waves((1 / dimY) * clock_y, rand4);
+						let waveValue_y = waves((1 / dimX) * clock_x, rand5);
 						let ptX = originX + (x + waveValue_x) * scale;// + Math.random() * 15;
-						let ptY = originY + (y + waveValue_y * <?php rand(1, 2) ?>.<?php rand(0, 9) ?>) * scale;// + Math.random() * 15;
+						let ptY = originY + (y + waveValue_y * rand6) * scale;// + Math.random() * 15;
 
 						deltaX = waveValue_x - prevValue_x;
 						deltaY = waveValue_y - prevValue_y;
@@ -111,8 +126,8 @@
 				var svgName = 'svgBg';
 				var rootSvg = document.createElement('svg');
 				rootSvg.setAttribute('id', svgName);
-				var dimX = <?php echo rand(20, 30); ?>;
-				var dimY = <?php echo rand(18, 28); ?>;
+				var dimX = rand7;
+				var dimY = rand8;
 				var scale = 50;
 				var point = createGrid(dimX, dimY, scale, clock);
 				var svgCopy;
@@ -154,7 +169,7 @@
 				while (index < polyline.length)
 				rootSvg.appendChild(polyline[index++]);
 				document.getElementsByTagName('wavebackground')[0].innerHTML = "<svg id='svgBg' viewbox='0 0 800 500' width='800' height='500' preserveAspectRatio='none'>" + rootSvg.innerHTML + "</svg>";
-				clock += 0.0<?php echo rand(0, 9); ?><?php echo rand(0, 9); ?><?php echo rand(0, 9); ?>;
+				clock += rand9;
 			}
 
 			var clock = 0;
@@ -171,23 +186,20 @@
 				background-color: black;
 			}
 
-			<?php
-				$colorRed_fg = rand(0, 255);
-				$colorGreen_fg = rand(0, 255);
-				$colorBlue_fg = rand(0, 255);
-				$colorRed_bg = rand(0, 255);
-				$colorGreen_bg = rand(0, 255);
-				$colorBlue_bg = rand(0, 255);
-			?>
-
+			$colorRed_fg: random(255);
+			$colorGreen_fg: random(255);
+			$colorBlue_fg: random(255);
+			$colorRed_bg: random(255);
+			$colorGreen_bg: random(255);
+			$colorBlue_bg: random(255);
 			polyline {
-				stroke: rgb(<?php echo $colorRed_fg; ?>, <?php echo $colorGreen_fg; ?>, <?php echo $colorBlue_fg; ?>);
+				stroke: rgb($colorRed_fg, $colorGreen_fg, $colorBlue_fg);
 				stroke-width: 1px;
 			}
 
 			#waveTitle {
 				position: relative;
-				background-color: rgba(<?php echo $colorRed_bg; ?>, <?php echo $colorGreen_bg; ?>, <?php echo $colorBlue_bg; ?>, 0.5);
+				background-color: rgba($colorRed_bg, $colorGreen_bg, $colorBlue_bg, 0.5);
 				width: 25%;
 				left: 38%;
 				top: 25vh;
@@ -198,8 +210,8 @@
 
 			#waveTitle h1 {
 				font-family: 'Brush Script MT',cursive;
-				color: rgb(<?php echo $colorRed_fg; ?>, <?php echo $colorGreen_fg; ?>, <?php echo $colorBlue_fg; ?>);
-				text-shadow: 3px 3px rgb(<?php echo 255 - $colorRed_fg; ?>, <?php echo 255 - $colorGreen_fg; ?>, <?php echo 255 - $colorBlue_fg; ?>);
+				color: rgb($colorRed_fg, $colorGreen_fg, $colorBlue_fg);
+				text-shadow: 3px 3px rgb(255 - $colorRed_fg, 255 - $colorGreen_fg, 255 - $colorBlue_fg);
 				font-size: 5vh;
 				position: relative;
 				display: block;
@@ -207,20 +219,20 @@
 			}
 
 			#waveTitle a {
-				background-color: rgb(<?php echo 255 - $colorRed_bg; ?>, <?php echo 255 - $colorGreen_bg; ?>, <?php echo 255 - $colorBlue_bg; ?>);
-				color: rgb(<?php echo $colorRed_bg; ?>, <?php echo $colorGreen_bg; ?>, <?php echo $colorBlue_bg; ?>);
+				background-color: rgb(255 - $colorRed_bg, 255 - $colorGreen_bg, 255 - $colorBlue_bg);
+				color: rgb($colorRed_bg, $colorGreen_bg, $colorBlue_bg);
 				padding: 10px 10% 10px 10%;
 				border-radius: 30px;
-				border: 3px solid rgb(<?php echo $colorRed_fg; ?>, <?php echo $colorGreen_fg; ?>, <?php echo $colorBlue_fg; ?>);
+				border: 3px solid rgb($colorRed_fg, $colorGreen_fg, $colorBlue_fg);
 				display: block;
 				text-align: center;
 				text-shadow: 2px 2px black;
 			}
 
 			#waveTitle a:hover {
-				background-color: rgb(<?php echo $colorRed_bg; ?>, <?php echo $colorGreen_bg; ?>, <?php echo $colorBlue_bg; ?>);
-				color: rgb(<?php echo 255 - $colorRed_bg; ?>, <?php echo 255 - $colorGreen_bg; ?>, <?php echo 255 - $colorBlue_bg; ?>);
-				border: 3px solid rgb(<?php echo 255 - $colorRed_fg; ?>, <?php echo 255 - $colorGreen_fg; ?>, <?php echo 255 - $colorBlue_fg; ?>);
+				background-color: rgb($colorRed_bg, $colorGreen_bg, $colorBlue_bg);
+				color: rgb(255 - $colorRed_bg, 255 - $colorGreen_bg, 255 - $colorBlue_bg);
+				border: 3px solid rgb(255 - $colorRed_fg, 255 - $colorGreen_fg, 255 - $colorBlue_fg);
 				text-shadow: 1px 1px black;
 			}
 
