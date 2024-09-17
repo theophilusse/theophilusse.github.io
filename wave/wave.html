@@ -22,6 +22,15 @@
                 <label for="rangeInput">Select a value B:</label>
                 <input type="range" id="rand3" min="0" max="255" value="50" step="1">
                 <br>
+                <label for="rangeInput">Select a value line R:</label>
+                <input type="range" id="lineR" min="0" max="255" value="50" step="1">
+                <br>
+                <label for="rangeInput">Select a value line G:</label>
+                <input type="range" id="lineG" min="0" max="255" value="50" step="1">
+                <br>
+                <label for="rangeInput">Select a value line B:</label>
+                <input type="range" id="lineB" min="0" max="255" value="50" step="1">
+                <br>
                 <label for="rangeInput">Select a value Y axis:</label>
                 <input type="range" id="rand4" min="0" max="9" value="5" step="0.0001">
                 <br>
@@ -162,6 +171,14 @@
                 rand8 = parseInt(rangeInput.value);
                 rangeInput = document.getElementById('rand9');
                 rand9 = parseFloat(rangeInput.value);
+                rangeInput = document.getElementById('lineR');
+                let lineR = rangeInput.value;
+                rangeInput = document.getElementById('lineG');
+                let lineG = rangeInput.value;
+                rangeInput = document.getElementById('lineB');
+                let lineB = rangeInput.value;
+                let blockPolyline = document.getElementsByTagName('polyline');
+                blockPolyline.style = "stroke: rgb("+lineR+", "+lineG+", "+lineB+"))";
 
 				var svgName = 'svgBg';
 				var rootSvg = document.createElement('svg');
