@@ -19,8 +19,8 @@
                 <input type="range" id="rand4" min="0" max="9" value="5" step="0.01">
                 <input type="range" id="rand5" min="0" max="8" value="5" step="0.01">
                 <input type="range" id="rand6" min="1" max="3" value="1.5" step="0.01">
-                <input type="range" id="rand7" min="20" max="30" value="22" step="0.01">
-                <input type="range" id="rand8" min="18" max="28" value="20" step="0.01">
+                <input type="range" id="rand7" min="20" max="30" value="22" step="1">
+                <input type="range" id="rand8" min="18" max="28" value="20" step="1">
                 <input type="range" id="rand9" min="0.0001" max="0.01" value="0.001" step="0.0001">
             </form>
 		</div>
@@ -127,23 +127,6 @@
 
 			function refreshSvg()
 			{
-				var svgName = 'svgBg';
-				var rootSvg = document.createElement('svg');
-				rootSvg.setAttribute('id', svgName);
-				var dimX = rand7;
-				var dimY = rand8;
-				var scale = 50;
-				var point = createGrid(dimX, dimY, scale, clock);
-				var svgCopy;
-				var polyline = buildPolyline(svgName, dimX, dimY);
-				var offsetA;
-				var offsetB;
-				var offsetC;
-				var offsetD;
-				var coordX = -1;
-				var coordY = 0;
-				var index = 0;
-
                 var rangeInput = document.getElementById('rand1');
                 rand1 = rangeInput.value;
                 rangeInput = document.getElementById('rand2');
@@ -162,6 +145,23 @@
                 rand8 = rangeInput.value;
                 rangeInput = document.getElementById('rand9');
                 rand9 = rangeInput.value;
+
+				var svgName = 'svgBg';
+				var rootSvg = document.createElement('svg');
+				rootSvg.setAttribute('id', svgName);
+				var dimX = rand7;
+				var dimY = rand8;
+				var scale = 50;
+				var point = createGrid(dimX, dimY, scale, clock);
+				var svgCopy;
+				var polyline = buildPolyline(svgName, dimX, dimY);
+				var offsetA;
+				var offsetB;
+				var offsetC;
+				var offsetD;
+				var coordX = -1;
+				var coordY = 0;
+				var index = 0;
 
 				while (index < polyline.length)
 				{
