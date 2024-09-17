@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title id="timerDisplay">Hello World</title>
+        <link rel="stylesheet" href="style.css" />
+
+        <!-- React + DOM -->
+        <script src="../include/react.development.js"></script>
+        <script src="../include/react-dom.development.js"></script>
+        <!--<script src="react.js"></script>-->
+        <!--<script src="react-dom.js"></script>-->
+
+        <!-- Babel -->
+        <script src="../include/babel.min.js"></script>
+    </head>
+    <body>
+        <div id="header" style="display:none">
+        </div>
+        <div id="root" class="fullscreen">
+        </div>
+
+        <script type="text/babel">
+
+            window.onbeforeunload = function(){
+                return 'Are you sure you want to leave?';
+            };
+
+            function putPixel(pix, x, y, color)
+            {
+                var offset;
+
+                if (!pix)
+                    return ;
+                offset = y * pix.width + x;
+                if (offset >= myPixels.size)
+                    return ;
+                pix.pixel[offset] = color;
+            }
+
+            function getPixel(pix, x, y)
+            {
+                var offset;
+
+                if (!pix)
+                    return ;
+                offset = y * pix.width + x;
+                if (offset >= myPixels.size)
+                    return ;
+                return pix.pixel[offset];
+            }
+
+            function newPixel(colorCode)
+            {
+                if (colorCode)
+                    return colorCode;
+                return ("");
+            }
+
+            function makePixelMap(width, height, dimPix, bgColor, initColor)
+            {
+                const pixel = [];
+                var color;
+                var size;
+                var i;
+
+                i = -1;
+                color = initColor == null ? bgColor : initColor;
+                size = width * height;
+                while (++i < size)
+                    pixel.push(newPixel(color));
+                return {
+                    "pixel": pixel,
+                    "size": size,
+                    "width": width,
+                    "height": height,
+                    "dimPix": dimPix,
+                    "bgColor": bgColor
+                }
+            }
+
+            function isInside(table, element)
+            {
+                var i;
+                var len;
+
+                len = table.length;
+                i = -1;
+                while (++i < len)
+                    if (element === table[i])
+                        return true;
+                return false;
+            }
+
+            function makeCss(pix, makeColorTable, gameStatus)
+            {
+                var table = [];
+                var css;
+                var color;
+                var width;
+                var height;
+                var lineHeight;
+                var i;
+
+                if (!pix)
+                    return "";
+                lineHeight = (pix.dimPix/3);
+                lineHeight = (pix.dimPix/5);
+                //lineHeight = pix.dimPix - 4;
+                width = (pix.dimPix*pix.width);
+                height = (pix.dimPix*pix.height);
+                css = ".pixelmap {width:"+width+"px;height:"+height+"px;line-height:"+lineHeight+"px;left:calc(50% - "+(width/2)+"px);top:calc(50% - "+(height/2)+"px);}\n";
+                css += ".pixelmap div {width:"+pix.dimPix+"px;height:"+pix.dimPix+"px;background-color:"+pix.bgColor+";display:inline-block;}\n";
+                css += ".pixelmap p {color: white; font-family: 'Bauhaus 93'}\n";
+                css += ".pixelmap p span {color: green; font-family: 'Bauhaus 93'}\n";
+                if (gameStatus != 0)
+                {
+                    css += ".pixelmap #score {color:"+(gameStatus == 1 ? "red" : "green")+";}\n.pixelmap #clock {color:yellow}\n";
+                    css += "#retry {display:block;position:absolute;font-size: 4em;font-family: Courier;border: 8px solid gray;width: 40%;height: 30%;line-height: calc(30% + 16px);letter-spacing:1vw;left:30%;top:30%;}\n";
+                }
+                else
+                    css += "#retry {display:none;}\n";
+                if (!makeColorTable)
+                    return css;
+                i = -1;
+                while (++i < pix.size)
+                {
+                    color = pix.pixel[i];
+                    if (!isInside(table, color))
+                        table.push(color);
+                }
+                i = -1;
+                while (++i < table.length)
+                    css += "._" + table[i] + " {background:#"+table[i]+";}\n";
+                return css;
+            }
+
+            function pixelMapToJSX(pix, makeColorTable, gameStatus)
+            {
+                let score;
+                let css;
+
+                if (!pix)
+                    return <p className='crash'>Fatal error</p>;
+                css = makeCss(pix, makeColorTable, gameStatus);
+                score = snake.cell.length/2 - 1;
+                if (!makeColorTable)
+                    return (
+                        <div className='pixelmap'>
+                            <style>{css}</style>
+                            <button id="retry" onClick={newGame}><b>GAME OVER</b></button>
+                            {
+                                pix.pixel.map
+                                (
+                                    (pixelColor,i) => ( <div key={i} style={{backgroundColor: "#" + pixelColor}}></div> ) // True color
+                                )
+                            }
+                            <p id="score">SCORE: <span>{score}</span> {gameInfo}</p>
+                            <p id="clock">TIME:  {tick}</p>
+                        </div>
+                    );
+                return (
+                    <div className='pixelmap'>
+                        <style>{css}</style>
+                        <button id="retry" onClick={newGame}><b>GAME OVER</b></button>
+                        {
+                            pix.pixel.map
+                            (
+                                (pixelColor,i) => ( <div key={i} className={"_" + pixelColor}></div> ) // Color table
+                            )
+                        }
+                        <p id="score">SCORE: <span>{score}</span> {gameInfo}</p>
+                        <p id="clock">TIME:  {tick}</p>
+                    </div>
+                );
+            }
+
+            function newApple(snake, width, height)
+            {
+                var appleX;
+                var appleY;
+                var invalid;
+
+                if (width <= 0 || height <= 0)
+                    return ;
+                invalid = true;
+                while (invalid)
+                {
+                    invalid = false;
+                    appleX = Math.floor(Math.random() * width);
+                    appleY = Math.floor(Math.random() * height);
+                    for (var i = 0; i < snake.cell.length - 1 && !invalid; i += 2)
+                        invalid = (appleX == snake.cell[i] && appleY == snake.cell[i + 1]) ? true : false;
+                }
+                snake.appleX = appleX;
+                snake.appleY = appleY;
+                putPixel(myPixels, snake.appleX, snake.appleY, snake.appleColor);
+                timeout = Math.max(120, timeout - difficulty);
+                setTimeout(gameLoop, timeout);
+                return (snake);
+            }
+
+            function isOutOfBound(snake, pix)
+            {
+                console.log("Snake @ ["+snake.x+"] ["+snake.y+"]"); // Debug
+                return (snake.x < 0 || snake.y < 0 || snake.x >= myPixels.width || snake.y >= myPixels.height ? true : false);
+            }
+
+            function onApple(snake)
+            {
+                return (snake.x == snake.appleX && snake.y == snake.appleY ? true : false);
+            }
+
+            function drawSnake_simple(snake, game)
+            {
+                var ch;
+                var cb;
+                var i;
+
+                switch (game)
+                {
+                    case 1:
+                        ch = snake.colorHeadDead;
+                        cb = snake.colorDead;
+                        break;
+                    case 2:
+                        ch = snake.colorHeadWin;
+                        cb = snake.colorWin;
+                        break;
+                    default:
+                        ch = snake.colorHead;
+                        cb = snake.color;
+                }
+                i = 0;
+                while (i < snake.cell.length - 3) // Head
+                //while (i < snake.cell.length - 1) // Original, no head
+                {
+                    putPixel(myPixels, snake.cell[i], snake.cell[i + 1], cb);
+                    i += 2;
+                }
+                putPixel(myPixels, snake.cell[i], snake.cell[i + 1], ch);
+                return (0);
+            }
+
+            function drawSnake(snake, game)
+            {
+                var ch;
+                var ct;
+                var cb;
+                var cb_h;
+                var cb_v;
+                var cb_ca;
+                var cb_cb;
+                var cb_cc;
+                var cb_cd;
+                var i;
+                let dirIndex;
+                
+                dirIndex = getDirectionIndex(snake.dirX, snake.dirY); // Meh
+                i = 0;
+                while (i < snake.cell.length - 2) // Head
+                //while (i < snake.cell.length - 1) // Original, no head
+                {
+                    if (i == 0)
+                        //putPixel(myPixels, snake.cell[i], snake.cell[i + 1], snake.tail_a); // REMETTRE
+                        putPixel(myPixels, snake.cell[i], snake.cell[i + 1], getSnakeTail(snake)); // REMETTRE
+                    else
+                    {
+                        //putPixel(myPixels, snake.cell[i], snake.cell[i + 1], snake.color);
+                        let tmpColor = getSnakeColor(snake, i);
+                        console.log("tmpColor ("+i+"): " + tmpColor);
+                        putPixel(myPixels, snake.cell[i], snake.cell[i + 1], tmpColor);
+                    }
+                    i += 2;
+                }
+                putPixel(myPixels, snake.cell[i], snake.cell[i + 1], getSnakeHead(snake)); // Remettre
+                return (0);
+            }
+
+            function getSnakeHead(snake)
+            {
+                let i;
+                let headX;
+                let headY;
+
+                i = snake.cell.length - 2;
+                if (i <= 1)
+                    switch (getDirectionIndex(snake.dirX, snake.dirY))
+                    {
+                        case 0:
+                            return (snake.head_a);
+                        case 1:
+                            return (snake.head_b);
+                        case 2:
+                            return (snake.head_c);
+                        default:
+                            return (snake.head_d);
+                    }
+                headX = snake.cell[i - 2] - snake.cell[i];
+                headY = snake.cell[i - 1] - snake.cell[i + 1];
+                console.log("getSnakeHead: ["+headX+"]["+headY+"]"); // Debug
+                if (headX == 0 && headY == -1)
+                    return (snake.head_c);
+                if (headX == 1 && headY == 0)
+                    return (snake.head_d);
+                if (headX == 0 && headY == 1)
+                    return (snake.head_a);
+                return (snake.head_b);
+            }
+
+            function getSnakeColor(snake, index)
+            {
+                let prevDir;
+                let nextDir;
+                let idx;
+                let prevX;
+                let prevY;
+                let posX;
+                let posY;
+                let nextX;
+                let nextY;
+
+                console.log("getSnakeColor: " + index); // Debug
+                idx = index / 2;
+                if (idx <= 0 || idx >= snake.cell.length / 2)
+                    return (snake.color);
+                console.log("SIZE ==== {"+snake.cell.length+"} :: " + index); // Debug
+                posX = snake.cell[index];
+                posY = snake.cell[index + 1];
+                prevX = snake.cell[index - 2] - posX;
+                prevY = snake.cell[index - 1] - posY;
+                nextX = snake.cell[index + 2] - posX;
+                nextY = snake.cell[index + 3] - posY;
+                prevDir = getDirectionIndex(prevX, prevY);
+                nextDir = getDirectionIndex(nextX, nextY);
+                console.log(
+                    "posX: " + posX + "\n" +
+                    "posY: " + posY + "\n" +
+                    "prevX: " + prevX + "\n" +
+                    "prevY: " + prevY + "\n" +
+                    "nextX: " + nextX + "\n" +
+                    "nextY: " + nextY + "\n" +
+                    "prevDir: " + prevDir + "\n" +
+                    "nextDir: " + nextDir + "\n"
+                );
+                if (prevDir > nextDir)
+                {
+                    index = prevDir;
+                    prevDir = nextDir;
+                    nextDir = index;
+                }
+                console.log(
+                    "+_+_posX: " + posX + "\n" +
+                    "posY: " + posY + "\n" +
+                    "prevX: " + prevX + "\n" +
+                    "prevY: " + prevY + "\n" +
+                    "nextX: " + nextX + "\n" +
+                    "nextY: " + nextY + "\n" +
+                    "prevDir: " + prevDir + "\n" +
+                    "nextDir: " + nextDir + "\n"
+                );
+                switch (prevDir)
+                {
+                    case 0:
+                        switch (nextDir)
+                        {
+                            case 1:
+                                return (snake.color_cd);
+                            case 2:
+                                return (snake.color_v);
+                            case 3:
+                                return (snake.color_cc);
+                        }
+                        break;
+                    case 1:
+                        switch (nextDir)
+                        {
+                            case 2:
+                                return (snake.color_ca);
+                            case 3:
+                                return (snake.color_h);
+                        }
+                        break;
+                    case 2:
+                        switch (nextDir)
+                        {
+                            case 1:
+                                return (snake.color_ca);
+                            case 3:
+                                return (snake.color_cb);
+                        }
+                        break;
+                }
+                console.log("getSnakeColor::: [" + prevDir,  + "]");// : [" + nextDir + "]"); // Debug
+                return (snake.color_h);
+            }
+
+            function getSnakeTail(snake)
+            {
+                let tailX;
+                let tailY;
+
+                tailX = snake.cell[2] - snake.cell[0];
+                tailY = snake.cell[3] - snake.cell[1];
+                if (tailX == 0 && tailY == -1)
+                    return (snake.tail_a);
+                if (tailX == 1 && tailY == 0)
+                    return (snake.tail_b);
+                if (tailX == 0 && tailY == 1)
+                    return (snake.tail_c);
+                return (snake.tail_d);
+            }
+
+            function drawGame(snake, game, pop)
+            {
+                var i;
+
+                if (game != 0)
+                    return drawSnake(snake, game);
+                snake.cell.push(snake.x);
+                snake.cell.push(snake.y);
+                //snake.cell.push(getDirectionIndex(snake.dirX, snake.dirY)); // Test
+                if (pop && game == 0)
+                {
+                    i = -1;
+                    while (++i < myPixels.size)
+                        if (myPixels.pixel[i] != myPixels.bgColor && myPixels.pixel[i] != snake.appleColor)
+                            myPixels.pixel[i] = myPixels.bgColor;
+                    snake.cell.shift();
+                    snake.cell.shift();
+                }
+                drawSnake(snake, game);
+            }
+
+            function displayGameStatus(gameStatus, snake, tick)
+            {
+                switch (gameStatus) // Game status
+                {
+                    case 1: // Lost
+                        //document.getElementById('timerDisplay').innerHTML="SNAKE ("+snake.cell.length/2+"): ["+tick+"] GAME OVER";
+                        gameInfo="GAME OVER";
+                        clearInterval(gameLoop);
+                        break;
+                    case 2: // Win
+                        //document.getElementById('timerDisplay').innerHTML="SNAKE ("+snake.cell.length/2+"): ["+tick+"] CONGRATULATION";
+                        gameInfo="WIN !";
+                        clearInterval(gameLoop);
+                        break;
+                    default: // Game
+                        //document.getElementById('timerDisplay').innerHTML="SNAKE ("+snake.cell.length/2+"): ["+tick+"]";
+                        gameInfo = "";
+                }
+            }
+
+            function isSnake(snake, exclude, pixel)
+            {
+                /* // TODO
+                if (pixel == black || pixel == snake.appleColor)
+                    return (false);
+                */
+                switch (pixel)
+                {
+                    case snake.appleColor:
+                        return (false);
+                    case snake.floor:
+                        return (false);
+                    case exclude:
+                        return (false);
+                    default:
+                        return (true);
+                }
+            }
+
+            function timer()
+            {
+                return (setInterval(function(){
+                    var pop;
+
+                    if (gamePaused || game != 0)
+                        return ;
+                    pop = true;
+                    snake.x = Math.floor(snake.x + snake.dirX);
+                    snake.y = Math.floor(snake.y + snake.dirY);
+                    snake.oldDirX = snake.dirX;
+                    snake.oldDirY = snake.dirY;
+                    // ORIGINAL
+                    if (isSnake(snake, myPixels.bgColor, getPixel(myPixels, snake.x, snake.y)) || isOutOfBound(snake, myPixels))
+                    //TODO
+                    //if (isSnake(snake, myPixels.bgColor, getPixel(myPixels, snake.x, snake.y)) || isOutOfBound(snake, myPixels))
+                        game = 1;
+                    else if (onApple(snake)) // Apple eaten
+                    {
+                        if (snake.cell.length < myPixels.size * 2)
+                        {
+                            pop = false;
+                            newApple(snake, myPixels.width, myPixels.height);
+                        }
+                        else // Game win
+                            game = 2;
+                    }
+                    displayGameStatus(game, snake, tick);
+                    drawGame(snake, game, pop, myPixels);
+                    root.render(pixelMapToJSX(myPixels, true, game));
+                    tick++;
+                }, timeout));
+            }
+
+            function getDirectionIndex(x, y)
+            {
+                /*
+                if (x == -1 && y == 0)
+                    return (0);
+                else if (x == 1 && y == 0)
+                    return (1);
+                else if (x == 0 && y == -1)
+                    return (2);
+                return (3);
+                */
+
+                if (x == 0 && y == -1)
+                    return (0);
+                else if (x == 1 && y == 0)
+                    return (1);
+                else if (x == 0 && y == 1)
+                    return (2);
+                return (3);
+            }
+
+            function initControls()
+            {
+                document.onkeypress = function (e) {
+                    var dirA;
+                    var dirB;
+                    const left = 97;
+                    const right = 100;
+                    const up = 119;
+                    const down = 115;
+                    const pause = 112;
+                    dirA = getDirectionIndex(snake.dirX, snake.dirY);
+                    dirB = getDirectionIndex(snake.oldDirX, snake.oldDirY);
+                    switch (e.keyCode)
+                    {
+                        case up: // 0
+                            if (dirA == 2 || dirB == 2 || gamePaused)
+                                break;
+                            snake.dirX = 0;
+                            snake.dirY = -1;
+                            break;
+                        case right: // 1
+                            if (dirA == 3 || dirB == 3 || gamePaused)
+                                break;
+                            snake.dirX = 1;
+                            snake.dirY = 0;
+                            break;
+                        case down: // 2
+                            if (dirA == 0 || dirB == 0 || gamePaused)
+                                break;
+                            snake.dirX = 0;
+                            snake.dirY = 1;
+                            break;
+                        case left: // 3
+                            if (dirA == 1 || dirB == 1 || gamePaused)
+                                break;
+                            snake.dirX = -1;
+                            snake.dirY = 0;
+                            break;
+                        case pause: // TODO
+                            gamePaused = !gamePaused;
+                    }
+                };
+            }
+
+            function MakeCssAssets(props)
+            {
+                var css = "._empty {background-color: transparent; !important;}\n";
+                css += "._"+props.floor+" {background-image: url('asset/floor.png') !important;}\n";
+                css += "._"+props.snake+" {background-image: url('asset/snake.png') !important;}\n";
+                css += "._"+props.head+" {background-image: url('asset/head.png') !important;}\n";
+                css += "._"+props.win+" {background-image: url('asset/snake_win.png') !important;}\n";
+                css += "._"+props.head_win+" {background-image: url('asset/head_win.png') !important;}\n";
+                css += "._"+props.snake_dead+" {background-image: url('asset/snake_dead.png') !important;}\n";
+                css += "._"+props.head_dead+" {background-image: url('asset/head_dead.png') !important;}\n";
+                // TODO (transparency)
+                css += "._"+props.apple+" {background-color: transparent; background-image: url('asset/apple.png') !important;}\n";
+                // TODO (transparency)
+                css += "._"+props.head_a+" {background-image: url('asset/head_a.png') !important;}\n";
+                css += "._"+props.head_b+" {background-image: url('asset/head_b.png') !important;}\n";
+                css += "._"+props.head_c+" {background-image: url('asset/head_c.png') !important;}\n";
+                css += "._"+props.head_d+" {background-image: url('asset/head_d.png') !important;}\n";
+                css += "._"+props.color_ca+" {background-image: url('asset/snake_ca.png') !important;}\n";
+                css += "._"+props.color_cb+" {background-image: url('asset/snake_cb.png') !important;}\n";
+                css += "._"+props.color_cc+" {background-image: url('asset/snake_cc.png') !important;}\n";
+                css += "._"+props.color_cd+" {background-image: url('asset/snake_cd.png') !important;}\n";
+                css += "._"+props.color_h+" {background-image: url('asset/snake_h.png') !important;}\n";
+                css += "._"+props.color_v+" {background-image: url('asset/snake_v.png') !important;}\n";
+                css += "._"+props.tail_a+" {background-image: url('asset/tail_a.png') !important;}\n";
+                css += "._"+props.tail_b+" {background-image: url('asset/tail_b.png') !important;}\n";
+                css += "._"+props.tail_c+" {background-image: url('asset/tail_c.png') !important;}\n";
+                css += "._"+props.tail_d+" {background-image: url('asset/tail_d.png') !important;}\n";
+                return <style>{css}</style>;
+            }
+
+            function initSnake(
+                color, // Obsolete
+                colorHead,
+                colorWin,
+                colorHeadWin,
+                colorDead,
+                colorHeadDead,
+                appleColor, // Apple
+                head_a, // Head
+                head_b,
+                head_c,
+                head_d,
+                color_ca, // Corner
+                color_cb,
+                color_cc,
+                color_cd,
+                color_h, // Corps
+                color_v,
+                tail_a, // Tail
+                tail_b,
+                tail_c,
+                tail_d
+                )
+            {
+                var retSnake = {
+                    'x': Math.floor(myPixels.width / 2),
+                    'y': Math.floor(myPixels.height / 2),
+                    'dirX': 1,
+                    'dirY': 0,
+                    'oldDirX': 1,
+                    'oldDirY': 0,
+                    'color': color,
+                    'colorHead': colorHead,
+                    'colorWin': colorWin,
+                    'colorHeadWin': colorHeadWin,
+                    'colorDead': colorDead,
+                    'colorHeadDead': colorHeadDead,
+
+                    'head_a': head_a,
+                    'head_b': head_b,
+                    'head_c': head_c,
+                    'head_d': head_d,
+                    'color_ca': color_ca,
+                    'color_cb': color_cb,
+                    'color_cc': color_cc,
+                    'color_cd': color_cd,
+                    'color_h': color_h,
+                    'color_v': color_v,
+                    'tail_a': tail_a,
+                    'tail_b': tail_b,
+                    'tail_c': tail_c,
+                    'tail_d': tail_d,
+                    'appleX': 0,
+                    'appleY': 0,
+                    'appleColor': appleColor,
+                    'cell': [ myPixels.width / 2, myPixels.height / 2 ] // TEST TODO DEBUG ??
+                };
+                newApple(retSnake, myPixels.width, myPixels.height);
+                putPixel(myPixels, retSnake.x, retSnake.y, retSnake.color);
+                return retSnake;
+            }
+
+            function newGame()
+            {
+                document.getElementById('timerDisplay').innerHTML="SNAKE";
+                myPixels = makePixelMap(30, 15, 50, "black", null);
+                //var myPixels = makePixelMap(10, 10, 50, "black", null);
+                speedCeil = 200;
+                speedFloor = 10;
+                difficulty = (speedCeil - speedFloor) / (Math.sqrt(myPixels.size));
+                if (difficulty <= 0)
+                    difficulty = 10;
+                timeout = speedCeil;
+                tick = 0;
+                game = 0; // Is playing
+                gamePaused = false;
+                snake = initSnake(
+                            '008800', // color
+                            '009900', // colorHead
+                            '00FF00', // colorWin
+                            '33FF00', // colorHeadWin
+                            '668800', // colorDead
+                            '779900', // colorHeadDead
+                            'FF0000', // appleColor
+                            '049901', // head_a
+                            '049902', // head_b
+                            '049903', // head_c
+                            '049904', // head_d
+                            '039901', // snake_ca
+                            '039902', // snake_cb
+                            '039903', // snake_cc
+                            '039904', // snake_cd
+                            '019901', // snake_h
+                            '019902', // snake_v
+                            '029A01', // tail_a
+                            '029A02', // tail_b
+                            '029A03', // tail_c
+                            '029A04'  // tail_d
+                            ); // Tail
+                /*
+                            color, // Obsolete
+                            colorHead,
+                            colorWin,
+                            colorHeadWin,
+                            colorDead,
+                            colorHeadDead,
+                            appleColor, // Apple
+                            head_a, // Head
+                            head_b,
+                            head_c,
+                            head_d,
+                            snake_ca, // Corner
+                            snake_cb,
+                            snake_cc,
+                            snake_cd,
+                            snake_h, // Corps
+                            snake_v,
+                            tail_a, // Tail
+                            tail_b,
+                            tail_c,
+                            tail_d
+                */
+                header.render(<MakeCssAssets
+                    floor={myPixels.bgColor}
+                    snake={snake.color}
+                    head={snake.colorHead}
+                    win={snake.colorWin}
+                    head_win={snake.colorWinHead}
+                    snake_dead={snake.colorDead}
+                    head_dead={snake.colorHeadDead}
+                    apple={snake.appleColor}
+                    head_a={snake.head_a}
+                    head_b={snake.head_b}
+                    head_c={snake.head_c}
+                    head_d={snake.head_d}
+                    color_ca={snake.color_ca}
+                    color_cb={snake.color_cb}
+                    color_cc={snake.color_cc}
+                    color_cd={snake.color_cd}
+                    color_v={snake.color_v}
+                    color_h={snake.color_h}
+                    tail_a={snake.tail_a}
+                    tail_b={snake.tail_b}
+                    tail_c={snake.tail_c}
+                    tail_d={snake.tail_d}
+                    />);
+                putPixel(myPixels, snake.x, snake.y, snake.colorHead);
+                root.render(pixelMapToJSX(myPixels, true, game));
+                initControls();
+                gameLoop = timer();
+            }
+
+            function debugSnake(snake)
+            {
+                console.log(
+                    snake.x + " a "
+                    + snake.y + " b "
+                    + snake.dirX + " c "
+                    + snake.dirY + " d "
+                    + snake.oldDirX + " e "
+                    + snake.oldDirY + " f "
+                    + snake.color + " g "
+                    + snake.colorHead + " h "
+                    + snake.colorWin + " i "
+                    + snake.colorHeadWin + " j "
+                    + snake.colorDead + " k "
+                    + snake.colorHeadDead + " l "
+
+                    + snake.head_a + " m "
+                    + snake.head_b + " n "
+                    + snake.head_c + " o "
+                    + snake.head_d + " p "
+                    + snake.color_ca + " q "
+                    + snake.color_cb + " r "
+                    + snake.color_cc + " s "
+                    + snake.color_cd + " t "
+                    + snake.color_h + " u "
+                    + snake.color_v + " v "
+                    + snake.tail_a + " v "
+                    + snake.tail_b + " v "
+                    + snake.tail_c + " v "
+                    + snake.tail_d + " w "
+
+                    + snake.appleX + " x "
+                    + snake.appleY + " y "
+                    + snake.appleColor + " z "
+                    + snake.cell
+                );
+            }
+
+            document.getElementById('timerDisplay').innerHTML="SNAKE";
+            var gameInfo;
+            var gamePaused;
+            var myPixels;
+            var speedCeil;
+            var speedFloor;
+            var difficulty;
+            var timeout;
+            var tick;
+            var game;
+            var snake;
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            const header = ReactDOM.createRoot(document.getElementById("header"));
+            var gameLoop;
+            newGame();
+            debugSnake(snake);
+        </script>
+    </body>
+</html>

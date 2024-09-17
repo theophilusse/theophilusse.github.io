@@ -1,0 +1,26 @@
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+.crash {
+    background-color: blue;
+    color: white;
+    font-size: large;
+    text-transform: capitalize;
+}
+
+.fullscreen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: black;
+}
+
+.pixelmap {
+    display: block;
+    position: absolute;
+    border: solid 1px white;
+}
