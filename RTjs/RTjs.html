@@ -1978,8 +1978,6 @@ function displayConsole(keycode=null, colorize=false)
 }
 
 /*****************************************************************************/
-	//import { createRoot } from 'react-dom/client';
-	import { ReactDOM } from 'react-dom/client';
 
 function pixelMapToJSX(pix, dimX, dimY, dimPix)
 {
@@ -2036,9 +2034,12 @@ function pixelMapToJSX(pix, dimX, dimY, dimPix)
 		if (pageTitleOffset == title.length)
 			pageTitleOffset = 0;
 	}
-	
-	const UIroot = ReactDOM.createRoot(document.getElementById("root"));
-	const UIheader = ReactDOM.createRoot(document.getElementById("header"));
+
+	import { createRoot } from 'react-dom/client';
+	const UIroot = createRoot(document.getElementById("root"));
+	const UIheader = createRoot(document.getElementById("header"));
+	//const UIroot = ReactDOM.createRoot(document.getElementById("root"));
+	//const UIheader = ReactDOM.createRoot(document.getElementById("header"));
 	reset();
 	init();
 	//console.log("intersect = " + intersectionRaySphere([0,0,0], [0,0,1], [[0,0,5], 1, [128, 128, 128]])); // Debug
