@@ -71,6 +71,9 @@
 			var rand7 = randomIntFromInterval(0, 10) + 20;
 			var rand8 = randomIntFromInterval(0, 10) + 18;
 			var rand9 = (Math.random() * 100) / 1000.0;
+            var lineR = randomIntFromInterval(0, 255);
+            var lineG = randomIntFromInterval(0, 255);
+            var lineB = randomIntFromInterval(0, 255);
 
 			function waves(x, oscillationNumber)
 			{
@@ -196,11 +199,11 @@
 				var index = 0;
 
                 rangeInput = document.getElementById('lineR');
-                let lineR = rangeInput.value;
+                lineR = rangeInput.value;
                 rangeInput = document.getElementById('lineG');
-                let lineG = rangeInput.value;
+                lineG = rangeInput.value;
                 rangeInput = document.getElementById('lineB');
-                let lineB = rangeInput.value;
+                lineB = rangeInput.value;
                 
                 style.textContent = `
                     polyline {
@@ -271,6 +274,12 @@
                 setCookie("rand8", rangeInput.value, 1);
                 rangeInput = document.getElementById('rand9');
                 setCookie("rand9", rangeInput.value, 1);
+                rangeInput = document.getElementById('lineR');
+                setCookie("lineR", rangeInput.value, 1);
+                rangeInput = document.getElementById('lineG');
+                setCookie("lineG", rangeInput.value, 1);
+                rangeInput = document.getElementById('lineB');
+                setCookie("lineB", rangeInput.value, 1);
             }
 
             function getCookie(name) {
@@ -304,6 +313,12 @@
                 rangeInput.value = getCookie("rand8");
                 rangeInput = document.getElementById('rand9');
                 rangeInput.value = getCookie("rand9");
+                rangeInput = document.getElementById('linrR');
+                rangeInput.value = getCookie("linrR");
+                rangeInput = document.getElementById('linrG');
+                rangeInput.value = getCookie("linrG");
+                rangeInput = document.getElementById('linrB');
+                rangeInput.value = getCookie("linrB");
             }
 
             function deleteAllCookies() {
