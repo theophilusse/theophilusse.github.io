@@ -2034,7 +2034,8 @@ function pixelMapToJSX(pix, dimX, dimY, dimPix)
 		if (pageTitleOffset == title.length)
 			pageTitleOffset = 0;
 	}
-
+	
+	import { createRoot } from 'react-dom/client';
 	const UIroot = ReactDOM.createRoot(document.getElementById("root"));
 	const UIheader = ReactDOM.createRoot(document.getElementById("header"));
 	reset();
