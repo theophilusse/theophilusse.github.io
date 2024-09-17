@@ -171,17 +171,6 @@
                 rand8 = parseInt(rangeInput.value);
                 rangeInput = document.getElementById('rand9');
                 rand9 = parseFloat(rangeInput.value);
-                rangeInput = document.getElementById('lineR');
-                let lineR = rangeInput.value;
-                rangeInput = document.getElementById('lineG');
-                let lineG = rangeInput.value;
-                rangeInput = document.getElementById('lineB');
-                let lineB = rangeInput.value;
-                let blockPolyline = document.getElementsByTagName('polyline');
-                let i = -1;
-                let len = blockPolyline.length;
-                while (++i < len)
-                    blockPolyline[i].setAttribute("style", "stroke: rgb("+lineR+", "+lineG+", "+lineB+"))");
 
 				var svgName = 'svgBg';
 				var rootSvg = document.createElement('svg');
@@ -199,6 +188,18 @@
 				var coordX = -1;
 				var coordY = 0;
 				var index = 0;
+
+                rangeInput = document.getElementById('lineR');
+                let lineR = rangeInput.value;
+                rangeInput = document.getElementById('lineG');
+                let lineG = rangeInput.value;
+                rangeInput = document.getElementById('lineB');
+                let lineB = rangeInput.value;
+                let blockPolyline = document.getElementsByTagName('polyline');
+                let i = -1;
+                let len = blockPolyline.length;
+                while (++i < len)
+                    blockPolyline[i].setAttribute("style", "stroke: rgb("+lineR+", "+lineG+", "+lineB+"))");
 
 				while (index < polyline.length)
 				{
