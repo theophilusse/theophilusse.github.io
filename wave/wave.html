@@ -181,7 +181,7 @@
                 let i = -1;
                 let len = blockPolyline.length;
                 while (++i < len)
-                    blockPolyline[i].style = "stroke: rgb("+lineR+", "+lineG+", "+lineB+"))";
+                    blockPolyline[i].setAttribute("style", "stroke: rgb("+lineR+", "+lineG+", "+lineB+"))");
 
 				var svgName = 'svgBg';
 				var rootSvg = document.createElement('svg');
