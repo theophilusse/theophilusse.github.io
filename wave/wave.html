@@ -327,7 +327,7 @@
                 rangeInput = document.getElementById('lineB');
                 rangeInput.value = getCookie("lineB");
                 rangeInput = document.getElementById('shadow');
-                rangeInput.value = getCookie("shadow");
+                rangeInput.value = getCookie("shadow") == "1" ? true : false;
             }
 
             function deleteAllCookies() {
