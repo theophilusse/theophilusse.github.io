@@ -178,7 +178,10 @@
                 rangeInput = document.getElementById('lineB');
                 let lineB = rangeInput.value;
                 let blockPolyline = document.getElementsByTagName('polyline');
-                blockPolyline.style = "stroke: rgb("+lineR+", "+lineG+", "+lineB+"))";
+                let i = -1;
+                let len = blockPolyline.length;
+                while (++i < len)
+                    blockPolyline[i].style = "stroke: rgb("+lineR+", "+lineG+", "+lineB+"))";
 
 				var svgName = 'svgBg';
 				var rootSvg = document.createElement('svg');
