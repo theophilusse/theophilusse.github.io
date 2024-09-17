@@ -39,6 +39,9 @@
 			var rand7 = randomIntFromInterval(0, 10) + 20;
 			var rand8 = randomIntFromInterval(0, 10) + 18;
 			var rand9 = (Math.random() * 100) / 1000.0;
+			var lineR = randomIntFromInterval(0, 255);
+			var lineG = randomIntFromInterval(0, 255);
+			var lineB = randomIntFromInterval(0, 255);
 
 			function waves(x, oscillationNumber)
 			{
@@ -75,9 +78,9 @@
 						deltaX = waveValue_x - prevValue_x;
 						deltaY = waveValue_y - prevValue_y;
 
-						/*if (preConst == 0)
+						if (preConst == 0)
 							colorFactor = deltaY + 1;
-						else*/
+						else
 							colorFactor = ((waveValue_y + 1.5) / 2);
 						let color = "rgb(" + (colorFactor * baseColor[0]) + "," + (colorFactor * baseColor[1]) + "," + (colorFactor * baseColor[2]) + ");";
 						point.push({
@@ -214,10 +217,29 @@
 				tmp = getCookie("rand9");
 				if (tmp != null)
 					rand9 = parseFloat(tmp, 10);
+				tmp = getCookie("lineR");
+				if (tmp != null)
+					lineR = parseInt(tmp, 10);
+				tmp = getCookie("lineG");
+				if (tmp != null)
+					lineG = parseInt(tmp, 10);
+				tmp = getCookie("lineB");
+				if (tmp != null)
+					lineB = parseInt(tmp, 10);
+				tmp = getCookie("shadow");
+				if (tmp != null)
+					preConst = parseInt(tmp, 10);
             }
 
 			var clock = 0;
 			var timeout = 20;
+			const style = document.createElement('style');
+            document.head.appendChild(style);
+			style.textContent = `
+                    polyline {
+                        stroke: rgb(`+lineR+`, `+lineG+`, `+lineB+`);
+                    }
+                `;
 			importWave();
 			setInterval(refreshSvg, timeout);
 			var css_redFg = randomIntFromInterval(0, 255);
