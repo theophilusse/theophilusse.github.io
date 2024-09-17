@@ -233,9 +233,9 @@
 
 			var clock = 0;
 			var timeout = 20;
+			importWave();
 			const style = document.createElement('style');
             document.head.appendChild(style);
-			importWave();
 			style.textContent = `
                     polyline {
                         stroke: rgb(`+lineR+`, `+lineG+`, `+lineB+`);
