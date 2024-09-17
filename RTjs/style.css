@@ -1,0 +1,100 @@
+#config {
+	display: flex;
+	flex-direction: right;
+	width: 100%;
+}
+
+#config > div {
+	border: 1px solid black;
+	display: flex;
+	flex-direction: column;
+	width: 20vw;
+}
+
+#config > div > form {
+	display: block;
+}
+
+#config > div > form > div {
+	display: block;
+}
+
+#config > div > form > div > * {
+	display: block;
+}
+
+#config #json {
+}
+
+#config #lights {
+}
+
+#config #objects {
+}
+
+#config #camera {
+}
+
+.output {
+	width: auto;
+}
+
+.submit {
+	width: fit-content;
+	margin: auto;
+	padding: 4px 8px 4px 8px;
+	background-color: red;
+	color: blue;
+}
+
+.submit:hover {
+	background-color: green;
+	color: yellow;
+}
+
+.delete {
+	margin: auto;
+	padding: 15px;
+	color: black;
+	background-color: yellow;
+	width: fit-content;
+}
+
+#helpWindow {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100vw;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+#helpWindow section {
+	height: 100vh;
+	display: flex !important;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+#helpWindow section img {
+	width: 75vw;
+}
+
+#helpWindow section ul {
+	background-color: cyan;
+	display: flex;
+}
+
+#helpWindow section ul li {
+	list-style-type: none;
+	margin: 1%;
+	padding: 1%;
+	background-color: white;
+}
+
+#helpWindow section ul li:before {
+    /* Unicode bullet symbol */
+    content: '\2022 ';
+    /* Bullet color */
+    padding-right: 0.5em;
+}

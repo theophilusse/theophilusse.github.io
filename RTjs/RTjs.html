@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title id="timerDisplay">RTjs</title>
+        <link rel="stylesheet" href="style.css" />
+
+        <!-- React + DOM -->
+        <script src="../include/react.development.js"></script>
+        <script src="../include/react-dom.development.js"></script>
+        <!-- Babel -->
+        <script src="../include/babel.min.js"></script>
+        <!--script src="./rt.js"></script-->
+    </head>
+    <body>
+        <div id="header" style="display:none">
+        </div>
+		<button id="reset" onclick='reset()'><b>RESET</b></button>
+        <div id="root" class="fullscreen">
+        </div>
+		<div id="config">
+			<div id="json">
+				<h2>Json</h2>
+				<form class="json">
+					<textarea class="input">
+					</textarea>
+					<div class='submit' onclick="setWorldJSON()">Valider</div>
+					<div class='submit' onclick="exportWorldJSON()">generate output</div>
+					<textarea class='output'></textarea>
+				</form>
+			</div>
+			<div id="lights">
+				<h2>Lights</h2>
+				<form class="light-0">
+					<div class="id">
+						<label>Name</label>
+						<input class="name" type="text"/>
+					</div>
+					<div class="primitive">
+						<label>Primitive Type</label>
+						<select>
+							<option value="-1" selected>Spot<option>
+						</select>
+					</div>
+					<div class="position">
+						<label>PosX</label>
+						<input class="X" placeholder="" type="number"></input>
+						<label>PosY</label>
+						<input class="Y" placeholder="" type="number"></input>
+						<label>PosZ</label>
+						<input class="Z" placeholder="" type="number"></input>
+					</div>
+					<div class="param">
+						<label>Radius</label>
+						<input class="radius" placeholder="" type="number"></input>
+						<label>Color</label>
+						<input class="color" placeholder="" type="color"></input>
+					</div>
+					<div class='submit' onclick="UIuserCreateNewLight()">Valider</div>
+				</form>
+				<ul class="list">
+				</ul>
+			</div>
+			<div id="objects">
+				<h2>Objects</h2>
+				<form class="obj-0">
+					<div class="id">
+						<label>Name</label>
+						<input class="name" type="text"/>
+					</div>
+					<div class="primitive">
+						<label>Primitive Type</label>
+						<select>
+							<option value="2" selected>Sphere<option>
+							<option value="1" selected>Empty<option>
+						</select>
+					</div>
+					<div class="position">
+						<label>PosX</label>
+						<input class="X" placeholder="" type="number"></input>
+						<label>PosY</label>
+						<input class="Y" placeholder="" type="number"></input>
+						<label>PosZ</label>
+						<input class="Z" placeholder="" type="number"></input>
+					</div>
+					<div class="param">
+						<label>Radius</label>
+						<input class="radius" placeholder="" type="number"></input>
+						<label>Color</label>
+						<input class="color" placeholder="" type="color"></input>
+					</div>
+					<div class='submit' onclick="UIuserCreateNewObject()">Valider</div>
+				</form>
+				<ul class="list">
+				</ul>
+			</div>
+			<div id="camera">
+				<h2>Camera</h2>
+				<form class="camera">
+					<div class="position">
+						<label>PosX</label>
+						<input class="X" placeholder="" type="number"></input>
+						<label>PosY</label>
+						<input class="Y" placeholder="" type="number"></input>
+						<label>PosZ</label>
+						<input class="Z" placeholder="" type="number"></input>
+					</div>
+					<div class="direction">
+						<label>DirX</label>
+						<input class="X" placeholder="" type="number"></input>
+						<label>DirY</label>
+						<input class="Y" placeholder="" type="number"></input>
+						<label>DirZ</label>
+						<input class="Z" placeholder="" type="number"></input>
+					</div>
+					<div class='submit' onclick="UIuserSetCamera()">Valider</div>
+				</form>
+			</div>
+			<div id="misc">
+				<h2>Misc</h2>
+				<form class="misc">
+					<label for="keyboard">Keyboard</label>
+					<select id="keyboard">
+						<option value="english" selected>EN<option>
+						<option value="french">FR<option>
+					</select>
+					<input type="button" id="help" value="help" onclick="toggleHelp()"/>
+					<div id="helpWindow" style="display: none;">
+						<section onclick="toggleHelp()">
+							<img src="keyboard.jpg"/>
+							<ul>
+								<li style="color: #00ff08;">Camera rotation (XY)</li>
+								<li style="color: #00b806;">Camera translation (XZ)</li>
+								<li style="color: #00d5be;">Camera translation (Y)</li>
+								<li style="color: #ff00c4;">Pause</li>
+								<li style="color: #ffb400;">Change pixel size</li>
+								<li style="color: #d50000;">Change screen resolution (XY)</li>
+							</ul>
+						</section>
+					</div>
+				</form>
+			</div>
+		</div>
+        
+		<script type="text/babel">
+function rotVec(axis, lev, a)
+{
+	var cosa;
+	var sina;
+	var output = [ 0, 0, 0 ];
+
+	cosa = Math.cos(a);
+	sina = Math.sin(a);
+	output[0] = (cosa + (1 - cosa) * axis[0] * axis[0]) * lev[0];
+	output[0] += ((1 - cosa) * axis[0] * axis[1] - axis[2] * sina) * lev[1];
+	output[0] += ((1 - cosa) * axis[0] * axis[2] + axis[1] * sina) * lev[2];
+	output[1] = ((1 - cosa) * axis[0] * axis[1] + axis[2] * sina) * lev[0];
+	output[1] += (cosa + (1 - cosa) * axis[1] * axis[1]) * lev[1];
+	output[1] += ((1 - cosa) * axis[1] * axis[2] - axis[0] * sina) * lev[2];
+	output[2] = ((1 - cosa) * axis[0] * axis[2] - axis[1] * sina) * lev[0];
+	output[2] += ((1 - cosa) * axis[1] * axis[2] + axis[0] * sina) * lev[1];
+	output[2] += (cosa + (1 - cosa) * axis[2] * axis[2]) * lev[2];
+	return (output);
+}
+
+function degToRad(deg)
+{
+	return (deg * Math.PI / 180);
+}
+
+function vSubstract(vecA, vecB)
+{
+	return ([
+		vecA[0] - vecB[0],
+		vecA[1] - vecB[1],
+		vecA[2] - vecB[2]
+	]);
+}
+
+function vAdd(vecA, vecB)
+{
+	return ([
+		vecA[0] + vecB[0],
+		vecA[1] + vecB[1],
+		vecA[2] + vecB[2]
+	]);
+}
+
+function vDiv(vec, reel)
+{
+	if (reel == 0)
+		return (vec);
+	return ([
+		vec[0] / reel,
+		vec[1] / reel,
+		vec[2] / reel
+	]);
+}
+
+function vMagnitude(vec)
+{
+	var x;
+	var y;
+	var z;
+
+	x = vec[0];
+	y = vec[1];
+	z = vec[2];
+	x *= x;
+	y *= y;
+	z *= z;
+	z = x + y + z;
+	if (z == 0.0)
+		return (0);
+	return (Math.sqrt(z));
+}
+
+function vNormalize(vec)
+{
+	var len;
+
+	len = vMagnitude(vec);
+	if (len == 0)
+		return (vec);
+	return ([
+		vec[0] / len,
+		vec[1] / len,
+		vec[2] / len
+	]);
+	return (out);
+}
+
+function crossProd(vecA, vecB)
+{
+	var out;
+	
+	out = [ 0, 0, 0 ];
+	out[0] = vecA[1] * vecB[2] - vecA[2] * vecB[1];
+	out[1] = vecA[2] * vecB[0] - vecA[0] * vecB[2];
+	out[2] = vecA[0] * vecB[1] - vecA[1] * vecB[0];
+	return (out);
+}
+
+/**
+ * 
+ * Fonction cool
+ * 
+ */
+function vInverse(vec)
+{
+	return ([
+		vec[0] *= -1,
+		vec[1] *= -1,
+		vec[2] *= -1
+	]);
+}
+
+function dotProd(vecA, vecB)
+{
+	return (vecA[0] * vecB[0] + vecA[1] * vecB[1] + vecA[2] * vecB[2]);
+}
+
+function vSquare(vec)
+{
+	return ([
+		vec[0] * vec[0],
+		vec[1] * vec[1],
+		vec[2] * vec[2]
+	]);
+}
+
+function vPow(vec, n)
+{
+	return ([
+		Math.pow(vec[0], n),
+		Math.pow(vec[1], n),
+		Math.pow(vec[2], n)
+	]);
+}
+
+function vSubstractReel(vec, r)
+{
+	return ([
+		vec[0] - r,
+		vec[1] - r,
+		vec[2] - r
+	]);
+}
+
+
+/*****************************************************************************/
+
+function makePoint(x=null, y=null, z=null)
+{
+	if (x == null)
+		return ([0, 0, 0]);
+	return ([x, y, z]);
+}
+
+function makeColor(x=null, y=null, z=null)
+{
+	return (makePoint(x, y, z));
+}
+
+function makeAxis(vecX=null, vecY=null, vecZ=null)
+{
+	return ([
+		vecX ? vecX : [1, 0, 0],
+		vecY ? vecY : [0, 1, 0],
+		vecZ ? vecZ : [0, 0, 1]
+	]);
+}
+
+function makePlainAxis(x=null, y=null, z=null, vecX=null, vecY=null, vecZ=null)
+{
+	return ([
+		makePoint(x, y, z),
+		makeAxis(vecX, vecY, vecZ),
+	]);
+}
+
+
+function makeScreen(width, height)
+{
+	var screen;
+	var numPix;
+	var x;
+
+	numPix = width * height;
+	screen = [];
+	x = -1;
+	while (++x < numPix)
+		screen.push("#000000"); // 
+	return (screen);
+}
+
+function getFov(dim, fov)
+{
+	var aFov = [ 0, 0 ];
+
+	if (dim[0] >= dim[1])
+	{
+		let ratio;
+
+		ratio = dim[0] / dim[1];
+		aFov[1] = ratio * fov;
+		aFov[0] = fov;
+	}
+	else
+	{
+		let ratio;
+
+		ratio = dim[1] / dim[0];
+		aFov[0] = ratio * fov;
+		aFov[1] = fov;	
+	}
+	return (aFov);
+}
+
+function makeRay(dim, dir, fov=null)
+{
+	var vTopLeft;
+	var pad;
+	var ray;
+	var x;
+	var y;
+	var aFov;
+	
+	if (fov == null)
+		fov = 60;
+	aFov = getFov(dim, fov);
+	let aPad = [
+		aFov[0] / dim[0],
+		aFov[1] / dim[1]
+	];
+	var padRatio = Math.min(aPad[0], aPad[1]); // Debug
+	vTopLeft = rotVec(
+		dir[idxAXIS_RIGHT], dir[idxAXIS_FRONT],
+		degToRad(-aFov[1] / 2)
+		//degToRad(-padRatio / 2)
+	);
+	vTopLeft = rotVec(
+		dir[idxAXIS_TOP], vTopLeft,
+		degToRad(aFov[0] / 2)
+		//degToRad(padRatio / 2)
+	);
+	
+	ray = [];
+	y = -1;
+	while (++y < dim[1])
+	{
+		x = -1;
+		while (++x < dim[0])
+		{
+			let tmpRay = rotVec(
+				dir[idxAXIS_RIGHT], vTopLeft,
+				degToRad(padRatio * y) // TODO Inverse x
+			);
+			tmpRay = rotVec(
+				dir[idxAXIS_TOP], tmpRay,
+				degToRad(-padRatio * x) // 
+			);
+			ray.push(tmpRay);
+		}
+	}
+	return (ray);
+}
+
+function intersectionRaySphere(org, dir, sphere)
+{
+	var vSub;
+	var dota;
+	var dotb;
+	var vMag;
+	var vRay;
+	var vSqrt;
+
+	vSub = vSubstract(org, sphere[idxOBJECT_VPOS]);
+	dota = dotProd(dir, vSub);
+	dotb = dota * dota;
+	vMag = vMagnitude(vSub);
+	vRay = sphere[idxOBJECT_RAY] * sphere[idxOBJECT_RAY];
+	dota *= -1;
+	vMag *= vMag;
+	vSqrt = dotb - vMag + vRay;
+	if (vSqrt < 0)
+		return ([0, 0]);
+	vSqrt = Math.sqrt(vSqrt);
+	var t = (dota - vSqrt);
+	if (t < 0)
+		return ([0, 0]);
+	return ([t, vAdd(org, vMultiply(dir, t))]);
+}
+
+/*****************************************************************************/
+
+const idxAXIS_X = 0;
+const idxAXIS_Y = 1;
+const idxAXIS_Z = 2;
+const idxAXIS_RIGHT = 0;
+const idxAXIS_TOP = 1;
+const idxAXIS_FRONT = 2;
+const idxWIDTH = 0;
+const idxHEIGHT = 1;
+
+const idxTYPE_SUN = -1;
+const idxTYPE_CAMERA = 0;
+const idxTYPE_EMPTY = 1;
+const idxTYPE_SPHERE = 2;
+
+const idxTYPE_KEYFRAME_POSITION = 0;
+const idxTYPE_KEYFRAME_DIRECTION = 1;
+const idxTYPE_KEYFRAME_POSITIONDIRECTION = 2;
+const idxTYPE_KEYFRAME_RAY = 3;
+
+function getObjectTypeName(objectType)
+{
+	switch (objectType)
+	{
+		case idxTYPE_SPHERE: return ("Sphere");
+		case idxTYPE_EMPTY: return ("Empty");
+		case idxTYPE_CAMERA: return ("Camera");
+		case idxTYPE_SUN: return ("Spot");
+	}
+	return ("unknown");
+}
+
+function getObjectTypeByName(typeName)
+{
+	switch (typeName)
+	{
+		case "Sphere": return (idxTYPE_SPHERE);
+		case "Empty": return (idxTYPE_EMPTY);
+		case "Camera": return (idxTYPE_CAMERA);
+		case "Spot": return (idxTYPE_SUN);
+	}
+	return (idxTYPE_EMPTY);
+}
+
+const idxOBJECT_TYPE = 0;
+const idxOBJECT_NAME = 1;
+const idxOBJECT_VPOS = 2;
+const idxOBJECT_RAY = 3;
+const idxOBJECT_VAXIS = 4;
+const idxOBJECT_VCOLOR = 5;
+
+const idxCAMERA_NAME = 1;
+const idxCAMERA_VPOS = 2;
+const idxCAMERA_VAXIS = 3;
+const idxCAMERA_VDIM = 4;
+
+const idxKEYFRAME_OBJECTPATH = 0;
+const idxKEYFRAME_CLOCK = 1;
+const idxKEYFRAME_TYPE = 2;
+const idxKEYFRAME_VPOS = 3;
+const idxKEYFRAME_VAXIS = 4;
+const idxKEYFRAME_VCOLOR = 5;
+const idxKEYFRAME_RAY = 6;
+
+const idxRED = 0;
+const idxGREEN = 1;
+const idxBLUE = 2;
+const idxDEPTH = 3;
+
+const idxVPOS = 0;
+const idxVAXIS = 1;
+const idxVSCREENDIMENSION = 2;
+const idxASCREEN = 3;
+const idxASCREEN_RED = 4;
+const idxASCREEN_BLUE = 5;
+const idxARAYS = 6;
+var globalPause = false;
+var globalPixelSize = 16;
+var globalDebug = [ 0, 0, 0 ];
+var globalScreenWidth = 15;
+var globalScreenHeight = 15;
+var globalVariables = [
+	0,// vPos
+	0,// vvvAxis
+	0,// screenDimensions
+	0,// aPixels
+	0,// aPixels_red
+	0,// aPixels_blue
+	0// avRays
+]
+
+const idxANAGLYPH_ACTIVE = 0;
+const idxANAGLYPH_Z = 1;
+var globalAnaglyph = [ true, 4 ];
+
+var globalSelectedCamera = 0;
+var globalCamera = [
+	[getObjectTypeByName("Camera"), "mainCamera", makePoint(0, 0, -10), makeAxis(), [10, 10]],
+	[getObjectTypeByName("Camera"), "altCamera", makePoint(-10, 0, 0), makeAxis(), [100, 100]]
+];
+
+function getCamera(name=null)
+{
+	var len;
+	var i;
+
+	if (name == null)
+		return (globalCamera);
+	if (typeof name == "number")
+		return (globalCamera[name % globalCamera.length]);
+	len = globalCamera.length;
+	i = -1;
+	while (++i < len)
+		if (globalCamera[i][idxOBJECT_NAME] == name)
+			return (globalCamera[i]);
+	return (null);
+}
+
+function setCameraMain(camera)
+{
+	var v = globalVariables;
+	if (camera == null)
+		return (null);
+	v[idxVPOS] = camera[idxCAMERA_VPOS];
+	v[idxVAXIS] = camera[idxCAMERA_VAXIS];
+	v[idxVSCREENDIMENSION] = camera[idxCAMERA_VDIM];
+	globalScreenWidth = camera[idxCAMERA_VDIM][idxWIDTH];
+	globalScreenHeight = camera[idxCAMERA_VDIM][idxHEIGHT];
+	return (camera);
+}
+
+var globalObject = [
+	[getObjectTypeByName("Sphere"), "mainSphere", makePoint(0, 0, 10), 5, makeAxis(), makeColor(128, 34, 58)],
+	[getObjectTypeByName("Sphere"), "altSphere", makePoint(-2, -2, 5), 3, makeAxis(), makeColor(34, 128, 18)]
+];
+
+function getObject(name=null)
+{
+	var len;
+	var i;
+
+	if (name == null)
+		return (globalObject);
+	if (typeof name == "number")
+		return (globalObject[name % globalObject.length]);
+	len = globalObject.length;
+	i = -1;
+	while (++i < len)
+		if (globalObject[i][idxOBJECT_NAME] == name)
+			return (globalObject[i]);
+	return (null);
+}
+
+var globalLight = [
+	[getObjectTypeByName("Spot"), "mainLight", makePoint(2, 7, -1), 1, makeAxis(), makeColor(124, 7, 77)],
+	[getObjectTypeByName("Spot"), "altLight0", makePoint(-2, 0, 15), 1, makeAxis(), makeColor(255, 255, 255)],
+	[getObjectTypeByName("Spot"), "altLight1", makePoint(15, 0, 0), 1, makeAxis(), makeColor(255, 255, 255)]
+];
+
+function getLight(name=null)
+{
+	var len;
+	var i;
+
+	if (name == null)
+		return (globalLight);
+	if (typeof name == "number")
+		return (globalLight[name % globalLight.length]);
+	len = globalLight.length;
+	i = -1;
+	while (++i < len)
+		if (globalLight[i][idxOBJECT_NAME] == name)
+			return (globalLight[i]);
+	return (null);
+}
+
+function reset()
+{
+	var camera;
+	var v = globalVariables;
+	var currentCamera = v;
+
+	v[idxVPOS] = makePoint(); // Push position
+	v[idxVAXIS] = makeAxis(); // Push axis
+	camera = getCamera(globalSelectedCamera);
+	setCameraMain(camera);
+	v[idxASCREEN] = makeScreen(camera[idxCAMERA_VDIM][idxWIDTH], camera[idxCAMERA_VDIM][idxHEIGHT]); // Push screen
+	if (globalAnaglyph[idxANAGLYPH_ACTIVE]) // Anaglyph
+	{
+		v[idxASCREEN_RED] = makeScreen(camera[idxCAMERA_VDIM][idxWIDTH], camera[idxCAMERA_VDIM][idxHEIGHT]); // Push screen anaglyph red
+		v[idxASCREEN_BLUE] = makeScreen(camera[idxCAMERA_VDIM][idxWIDTH], camera[idxCAMERA_VDIM][idxHEIGHT]); // Push screen anaglyph blue
+	}
+	v[idxARAYS] = makeRay(v[idxVSCREENDIMENSION], v[idxVAXIS]); // Push rays
+
+	UIdisplayObject(getObject(), document.querySelector(queryUI_OBJECTS.wrap + queryUI_OBJECTS.list), 'deleteObject');
+	UIdisplayObject(getLight(), document.querySelector(queryUI_LIGHT.wrap + queryUI_LIGHT.list), 'deleteLight');
+	render(
+		getObject(),
+		getLight()
+	);
+	displayConsole();
+	UIroot.render(pixelMapToJSX(v[idxASCREEN], v[idxVSCREENDIMENSION][idxWIDTH], v[idxVSCREENDIMENSION][idxHEIGHT], globalPixelSize));
+}
+
+function refresh()
+{
+	var camera;
+	var v = globalVariables;
+	var currentCamera = v;
+
+	v[idxVPOS] = makePoint(); // Push position
+	v[idxVAXIS] = makeAxis(); // Push axis
+	camera = getCamera(globalSelectedCamera);
+	setCameraMain(camera);
+	v[idxASCREEN] = makeScreen(camera[idxCAMERA_VDIM][idxWIDTH], camera[idxCAMERA_VDIM][idxHEIGHT]); // Push screen
+	if (globalAnaglyph[idxANAGLYPH_ACTIVE]) // Anaglyph
+	{
+		v[idxASCREEN_RED] = makeScreen(camera[idxCAMERA_VDIM][idxWIDTH], camera[idxCAMERA_VDIM][idxHEIGHT]); // Push screen anaglyph red
+		v[idxASCREEN_BLUE] = makeScreen(camera[idxCAMERA_VDIM][idxWIDTH], camera[idxCAMERA_VDIM][idxHEIGHT]); // Push screen anaglyph blue
+	}
+	v[idxARAYS] = makeRay(v[idxVSCREENDIMENSION], v[idxVAXIS]); // Push rays
+
+	UIdisplayObject(getObject(), document.querySelector(queryUI_OBJECTS.wrap + queryUI_OBJECTS.list), 'deleteObject');
+	UIdisplayObject(getLight(), document.querySelector(queryUI_LIGHT.wrap + queryUI_LIGHT.list), 'deleteLight');
+	render(
+		getObject(),
+		getLight()
+	);
+}
+
+function vReverse(vec)
+{
+	return ([
+		vec[0] * -1,
+		vec[1] * -1,
+		vec[2] * -1
+	]);
+}
+
+function vMultiply(vec, scalar)
+{
+	return ([
+		vec[0] * scalar,
+		vec[1] * scalar,
+		vec[2] * scalar
+	]);
+}
+
+function vMultiplyVec(vecA, vecB)
+{
+	return ([
+		vecA[0] * vecB[0],
+		vecA[1] * vecB[1],
+		vecA[2] * vecB[2]
+	]);
+}
+
+function vMultiplyScalar(vec, scalar)
+{
+	return ([
+		parseInt(vec[0] * scalar),
+		parseInt(vec[1] * scalar),
+		parseInt(vec[2] * scalar)
+	]);
+}
+
+function castColor(color)
+{
+	var r;
+	var g;
+	var b;
+
+	r = parseInt(color[0]),
+	g = parseInt(color[1]),
+	b = parseInt(color[2])
+	return ([
+		Math.min(0, Math.max(r, 255)),
+		Math.min(0, Math.max(g, 255)),
+		Math.min(0, Math.max(b, 255))
+	]);
+}
+
+function vMultiplyColor(vColor, factor, cast=true)
+{
+	var r;
+	var g;
+	var b;
+
+	/*return ([
+		parseInt(vColor[0] * factor),
+		parseInt(vColor[1] * factor),
+		parseInt(vColor[2] * factor)
+	]); */
+	///isNanVector(vColor, "vColor MultiplyColor"); // DEBUG
+	r = vColor[0] * factor;
+	if (r <= Number.MIN_VALUE)
+		r = 0;
+	g = vColor[1] * factor;
+	if (g <= Number.MIN_VALUE)
+		g = 0;
+	b = vColor[2] * factor;
+	if (b <= Number.MIN_VALUE)
+		b = 0;
+	if (cast)
+		return ([
+			r > 255 ? 255 : parseInt(r),
+			g > 255 ? 255 : parseInt(g),
+			b > 255 ? 255 : parseInt(b)
+		]);
+	return ([
+		r > 255 ? 255 : r,
+		g > 255 ? 255 : g,
+		b > 255 ? 255 : b
+	]);
+}
+
+function castInt(vec)
+{
+	return ([
+		parseInt(vec[0]),
+		parseInt(vec[1]),
+		parseInt(vec[2])
+	]);
+}
+
+function colorScale255(vColor) // Not tested
+{
+	return (vMultiplyColor(vColor, 255));
+}
+
+function colorVectorNormalize(vColor) // Not tested
+{
+	return (castInt(vMultiply(vColor, 0.003921568627451 /*1/255*/, true)));
+}
+
+function colorGreyscale(grey)
+{
+	grey = grey.toString(16);
+	return ("#" + grey + grey + grey);
+}
+
+function nearest(aObj)
+{
+	var min = Number.MAX_VALUE;
+	var min_index;
+	var index;
+	var dist;
+	
+	min_index = -1;
+	index = -1;
+	while (++index < aObj.length)
+	{
+		dist = aObj[index][0];
+		if (dist != 0 && dist < min)
+		{
+			min_index = index;
+			min = dist;
+		}
+	}
+	return (min_index);
+}
+
+function sortAscending(array) // Unused
+{
+	return (array.sort(function(a, b) {
+		return a - b;
+	}));
+}
+
+function vecToColor(vec)
+{
+	var cr;
+	var cg;
+	var cb;
+
+	cr = vec[idxRED].toString(16);
+	if (cr.length < 2)
+		cr = "0" + cr;
+	cg = vec[idxGREEN].toString(16);
+	if (cg.length < 2)
+		cg = "0" + cg;
+	cb = vec[idxBLUE].toString(16);
+	if (cb.length < 2)
+		cb = "0" + cb;
+	return ("#" + 
+		cr +
+		cg +
+		cb
+	);
+}
+
+function mixColor(aColor)
+{
+	var acc;
+	var len;
+	var i;
+	
+	acc = [ 0, 0, 0 ];
+	if ((len = aColor.length) == 0)
+		return (acc);
+	i = -1;
+	while (++i < len)
+		acc = vAdd(acc, aColor[i]);
+	return ([
+		acc[0] / len,
+		acc[1] / len,
+		acc[2] / len
+	]);
+}
+
+function addColor(aColor)
+{
+	var i;
+	var acc;
+	var len;
+
+	acc = [ 0, 0, 0 ];
+	i = -1;
+	len = aColor.length;
+	while (++i < len)
+		acc = vAdd(acc, aColor[i]);
+	return ([
+		Math.max(0, Math.min(acc[0], 255)),
+		Math.max(0, Math.min(acc[1], 255)),
+		Math.max(0, Math.min(acc[2], 255))
+	]);
+}
+
+function getColorReflexion(org, dir, t, aObject, objectId, aLight, maxIter, iter) // Light get reflected by object
+{
+	var v1;
+	var n;
+	var v2;
+	var vLight;
+	var pt;
+	var lightIndex;
+	var light = [ -1, [] ];
+
+	pt = t[1];
+	v1 = vNormalize(vSubstract(org, pt)); // Camera point vector
+	switch (aObject[objectId][idxOBJECT_TYPE]) // Get normal vector
+	{
+		case idxTYPE_SPHERE:
+			n = vNormalize(vSubstract(pt, aObject[objectId][idxOBJECT_VPOS]));
+			break;
+		default:
+			n = [0, 1, 0];
+	}
+	v2 = rotVec(n, v1, degToRad(180)); // Reflected vector
+	lightIndex = -1;
+	light[0] = 0;
+	let countLight = 0;
+	let averageExposition = 0;
+	while (++lightIndex < aLight.length) // Dot for each light point
+	{
+		let dot;
+		//vLight = vSubstract(aLight[lightIndex][idxOBJECT_VPOS], pt);
+		vLight = vSubstract(pt, aLight[lightIndex][idxOBJECT_VPOS]);
+		dot = dotProd(v2, vNormalize(vLight));
+		//dot = dotProd(n, vNormalize(vLight));
+		if (dot > 0)
+		{
+			averageExposition += dot;
+			countLight++;
+			if ((light[0] += dot) >= 1)
+			{
+				light[0] = 1;
+				break;
+			}
+			light[1].push(vMultiplyScalar(aLight[lightIndex][idxOBJECT_VCOLOR], light[0])); // Push each light multiplied by
+			//light[1].push(vMultiplyScalar(aLight[lightIndex][idxOBJECT_VCOLOR], dot)); // Push each light multiplied by
+		}
+	}
+	if (countLight > 0)
+		averageExposition /= countLight;
+	//let finalColor = [ raytrace(aObject, aLight, pt, v2), aObject[objectId][idxOBJECT_VCOLOR] ];	
+	//let finalColor = [ mixColor(light[1]), aObject[objectId][idxOBJECT_VCOLOR] ];
+	let rt = raytrace(aObject, aLight, pt, v2, maxIter, iter);
+	let finalColor = [ mixColor(light[1]), rt, aObject[objectId][idxOBJECT_VCOLOR] ];
+	//let finalColor = [ mixColor(light[1]), rt ];
+	//let finalColor = [ mixColor(light[1]), aObject[objectId][idxOBJECT_VCOLOR] ];
+	//vPow(Math.sqrt(dotSpec), 0.5); // TODO Specular
+
+	return (vMultiplyColor(mixColor(finalColor), 1.0));
+	//return (vMultiplyColor(mixColor(finalColor), light[0]));
+	vMultiplyColor(finalColor[1], averageExposition);
+	return (mixColor(finalColor));
+}
+
+function getColorRefraction(org, dir, t, aObject, objectId, aLight, maxIter, iter) // Light pass throught object
+{
+	var v1;
+	var n;
+	var v2;
+	var vLight;
+	var pt;
+	var lightIndex;
+	var light = [ -1, [] ];
+
+	pt = t[1];
+	v1 = vNormalize(vSubstract(pt, org)); // Camera point vector 
+	switch (aObject[objectId][idxOBJECT_TYPE]) // Get normal vector
+	{
+		case idxTYPE_SPHERE:
+			n = vNormalize(vSubstract(pt, aObject[objectId][idxOBJECT_VPOS]));
+			break;
+		default:
+			n = [0, 1, 0];
+	}
+	v2 = rotVec(n, v1, degToRad(180)); // Reflected vector
+	//let n2 = vNormalize(crossProd(v1, n));
+	//v2 = rotVec(n2, v2, degToRad(180)); // Reflected vector
+
+	///
+	lightIndex = -1;
+	light[0] = 0;
+	let countLight = 0;
+	let averageExposition = 0;
+	while (++lightIndex < aLight.length) // Dot for each light point
+	{
+		let dot;
+		//vLight = vSubstract(aLight[lightIndex][idxOBJECT_VPOS], pt);
+		vLight = vSubstract(pt, aLight[lightIndex][idxOBJECT_VPOS]);
+		dot = dotProd(v2, vNormalize(vLight));
+		//dot = dotProd(n, vNormalize(vLight));
+		if (dot > 0)
+		{
+			averageExposition += dot;
+			countLight++;
+			if ((light[0] += dot) >= 1)
+			{
+				light[0] = 1;
+				break;
+			}
+			//light[1].push(vMultiplyScalar(aLight[lightIndex][idxOBJECT_VCOLOR], light[0])); // Push each light multiplied by
+			light[1].push(vMultiplyScalar(aLight[lightIndex][idxOBJECT_VCOLOR], dot)); // Push each light multiplied by
+		}
+	}
+	if (countLight > 0)
+		averageExposition /= countLight;
+	//let finalColor = [ raytrace(aObject, aLight, pt, v2), aObject[objectId][idxOBJECT_VCOLOR] ];	
+	//let finalColor = [ mixColor(light[1]), aObject[objectId][idxOBJECT_VCOLOR] ];
+	let rt = raytrace(aObject, aLight, pt, v2, maxIter, iter);
+	let finalColor = [ mixColor(light[1]), rt, aObject[objectId][idxOBJECT_VCOLOR] ];
+	//let finalColor = [ mixColor(light[1]), rt ];
+	//let finalColor = [ mixColor(light[1]), aObject[objectId][idxOBJECT_VCOLOR] ];
+	//vPow(Math.sqrt(dotSpec), 0.5); // TODO Specular
+
+	return (vMultiplyColor(mixColor(finalColor), 1.0));
+	//return (vMultiplyColor(mixColor(finalColor), light[0]));
+	//return (vMultiplyColor(mixColor(finalColor), light[0]));
+	vMultiplyColor(finalColor[1], averageExposition);
+	return (mixColor(finalColor));
+}
+
+function getColor(org, dir, t, aObject, objectId, aLight, maxIter, iter)
+{
+	//return (getColorReflexion(org, dir, t, aObject, objectId, aLight, maxIter, iter));
+	return (vMultiplyColor(mixColor([
+		getColorReflexion(org, dir, t, aObject, objectId, aLight, maxIter, iter)
+		,
+		getColorRefraction(org, dir, t, aObject, objectId, aLight, maxIter, iter)
+	]), 1.0));
+}
+
+function isNanVector(vec, prefix="") // Debug function
+{
+	if (isNaN(vec[0]) || isNaN(vec[1]) || isNaN(vec[2]))
+	{
+		console.log(prefix + " Is NaN " + isNaN(vec[0]) + " " + isNaN(vec[0]) + " " + isNaN(vec[0]) + " ");  // DEBUG
+		return (true);
+	}
+	return (false);
+}
+
+function setLuminosity(color, factor)
+{
+	var outColor = [ 255 * factor, 255 * factor, 255 * factor ];
+
+	if (factor <= 0)
+		return ([ 0, 0, 0 ]);
+	var f = -Math.sqrt(factor) + 1;
+	var mid = (color[idxRED] + color[idxGREEN] + color[idxBLUE]) / 3;
+	outColor[0] = parseInt(outColor[0] + (color[idxRED] - mid) * f);
+	outColor[1] = parseInt(outColor[1] + (color[idxGREEN] - mid) * f);
+	outColor[2] = parseInt(outColor[2] + (color[idxBLUE] - mid) * f);
+	isNanVector(outColor, "setLuminosity"); // Debug
+	return (outColor);
+}
+
+
+const idxLIGHTSOURCE_DOT = 0;
+const idxLIGHTSOURCE_INDEX = 1;
+const idxLIGHTSOURCE_COLOR = 2;
+/*
+*/
+function mostInlineLight(origin, ray, aLight)
+{
+	var mostInline = [ 0, 0, [ 0, 0, 0 ] ];
+	var aColor;
+	var vRel;
+	var dot;
+	var i;
+
+	aColor = [];
+	i = -1;
+	while (++i < aLight.length)
+	{
+		let inlineLight = vSubstract(origin, aLight[i][idxOBJECT_VPOS]); // Base
+		//let inlineLight = vSubstract(aLight[i][idxOBJECT_VPOS], origin); // Test
+		dot = dotProd(ray, vNormalize(inlineLight));
+		//dot *= dot * dot * dot * dot * dot * dot; // Test
+		Math.pow(dot, vMagnitude(inlineLight)); // Test
+		aColor.push(vMultiply(aLight[i][idxOBJECT_VCOLOR], dot));
+		//aColor.push(setLuminosity(vMultiply(aLight[i][idxOBJECT_VCOLOR], dot), dot));
+		//aColor.push(setLuminosity(aLight[i][idxOBJECT_VCOLOR], dot));
+		if (dot > mostInline[idxLIGHTSOURCE_DOT])
+		{
+			mostInline[idxLIGHTSOURCE_DOT] = dot;
+			mostInline[idxLIGHTSOURCE_INDEX] = i;
+		}
+	}
+	mostInline[1] = aLight[mostInline[1]];
+	mostInline[idxLIGHTSOURCE_COLOR] = mixColor(aColor); // Base
+	//mostInline[idxLIGHTSOURCE_COLOR] = addColor(aColor); // Test
+	return (mostInline);
+}
+
+var firstIntersectionDistance;
+function raytrace(aObject, aLight, origin, ray, maxIter, iter)
+{
+	let t = [];
+	let idObj;
+
+	if (iter == maxIter)
+		return([0,0,0]);
+	// Raytrace each objects
+	idObj = -1;
+	while (++idObj < aObject.length)
+		switch (aObject[idObj][idxOBJECT_TYPE]) // Fore each object type
+		{
+			case idxTYPE_SPHERE: // Intersect with sphere
+				t.push(intersectionRaySphere(origin, ray, aObject[idObj])); // Add intersection point
+				break;
+		}
+	idObj = nearest(t); // Sort nearest object
+	if (idObj < 0) // No Intersection
+	{
+		if (aLight.length >= 1) // Get light source
+		{
+			let dotColor;
+			let lightSource = mostInlineLight(origin, ray, aLight); // Mix light sources
+			//dotColor = (dotColor + 1) / 2;
+			if (lightSource[idxLIGHTSOURCE_DOT] > 0)
+				return (vMultiplyColor(lightSource[idxLIGHTSOURCE_COLOR], 1.0)); // Multiply color by vector orientation
+				//return (castColor(lightSource[idxLIGHTSOURCE_COLOR]));
+				//return (vMultiplyColor(lightSource[idxLIGHTSOURCE_COLOR], lightSource[idxLIGHTSOURCE_DOT])); // Multiply color by vector orientation
+			else
+				return([0,0,0]);
+		}
+	}
+	else // Object intersect
+	{
+		let color = getColor(origin, ray, t[idObj], aObject, idObj, aLight, iter);
+		firstIntersectionDistance = t[idObj][0];
+		//return (getColor(origin, ray, t[idObj], aObject, idObj, aLight, iter)); // Get object's color
+		return (color); // Get object's color
+	}
+	return([0,0,0]);
+	//
+}
+
+/*****************************************************************************/
+
+const idxOBJECTPATH_TYPE = 0;
+const idxOBJECTPATH_NAME = 1;
+
+function getEntity(objectPath)
+{
+	if (objectPath[idxOBJECTPATH_TYPE] == 0)
+		return (getCamera(objectPath[idxOBJECTPATH_NAME]));
+	else if (objectPath[idxOBJECTPATH_TYPE] < 0)
+		return (getLight(objectPath[idxOBJECTPATH_NAME]));
+	return (getObject(objectPath[idxOBJECTPATH_NAME]));
+}
+
+function getEntityPath(objectType, objectIndex)
+{
+	var e;
+
+	if (objectType == 0)
+		e = getCamera();
+	else if (objectType < 0)
+		e = getLight();
+	else
+		e = getObject();
+	if (objectIndex < 0 || objectIndex >= e.length)
+		return (null);
+	return ([getObjectTypeName(objectType), e[objectIndex % e.length][idxOBJECT_NAME]]);
+}
+
+/*****************************************************************************/
+
+function renderSingleKeyframe(k, currentClock)
+{
+	var object = getEntity(k[idxKEYFRAME_OBJECTPATH]);
+	var baseClock = k[idxKEYFRAME_CLOCK];
+	var deltaClock = baseClock - currentClock;
+	var tmpRay;
+	var tmpVec = makePoint();
+	var tmpAxis = makeAxis();
+
+	if (deltaClock < 0)
+		return ;
+	switch (k[idxKEYFRAME_TYPE])
+	{
+		case idxTYPE_KEYFRAME_POSITION:
+			tmpVec = vSubstract(k[idxKEYFRAME_VPOS], object[idxOBJECT_VPOS]);
+			if (deltaClock == 0)
+			{
+				object[idxOBJECT_VPOS] = k[idxKEYFRAME_VPOS];
+				break;
+			}
+			tmpVec = vDiv(tmpVec, deltaClock)
+			object[idxOBJECT_VPOS] = vAdd(object[idxOBJECT_VPOS], tmpVec)
+			break;
+		case idxTYPE_KEYFRAME_DIRECTION:
+			break;
+		case idxTYPE_KEYFRAME_POSITIONDIRECTION:
+			break;
+		case idxTYPE_KEYFRAME_RAY:
+			if (deltaClock == 0)
+			{
+				object[idxOBJECT_RAY] = k[idxKEYFRAME_RAY];
+				break;
+			}
+			tmpRay = k[idxKEYFRAME_RAY] - object[idxOBJECT_RAY];
+			tmpRay = tmpRay / deltaClock;
+			object[idxOBJECT_RAY] += tmpRay;
+			break;
+	}
+}
+
+function renderKeyframe(aKeyframe, currentClock)
+{
+	var i;
+	var len;
+
+	len = aKeyframe.length;
+	i = -1;
+	while (++i < len)
+		renderSingleKeyframe(aKeyframe[i], currentClock);
+}
+
+function makeKeyFrame(objectPath, clock, type, arg0, arg1=null, arg2=null)
+{
+	var kf = [0,0,0,0,0,0,0,0];
+
+	kf[idxKEYFRAME_OBJECTPATH] = objectPath;
+	kf[idxKEYFRAME_CLOCK] = clock;
+	kf[idxKEYFRAME_TYPE] = type;
+	switch (type)
+	{
+		case idxTYPE_KEYFRAME_DIRECTION:
+			kf[idxKEYFRAME_VAXIS] = arg0;
+			break;
+		case idxTYPE_KEYFRAME_POSITION:
+			kf[idxKEYFRAME_VPOS] = arg0;
+			break;
+		case idxTYPE_KEYFRAME_POSITIONDIRECTION:
+			kf[idxKEYFRAME_VPOS] = arg0;
+			kf[idxKEYFRAME_VAXIS] = arg1;
+			break;
+		case idxTYPE_KEYFRAME_RAY:
+			kf[idxKEYFRAME_RAY] = arg0;
+			break;
+	}
+	return (kf);
+}
+
+var globalClockInterval = 50;
+var globalClock = 0;
+var globalMaxClock = 100;
+var globalKeyframe = [
+	makeKeyFrame([getObjectTypeByName("Sphere"), "mainSphere"], 0, idxTYPE_KEYFRAME_POSITION, makePoint(-10, 0, 10)),
+	makeKeyFrame([getObjectTypeByName("Sphere"), "mainSphere"], 50, idxTYPE_KEYFRAME_POSITION, makePoint(10, 0, 10)),
+	makeKeyFrame([getObjectTypeByName("Sphere"), "mainSphere"], 99, idxTYPE_KEYFRAME_POSITION, makePoint(-10, 0, 10))
+	,
+	makeKeyFrame([getObjectTypeByName("Sphere"), "mainSphere"], 51, idxTYPE_KEYFRAME_RAY, 5),
+	makeKeyFrame([getObjectTypeByName("Sphere"), "mainSphere"], 80, idxTYPE_KEYFRAME_RAY, 0),
+	makeKeyFrame([getObjectTypeByName("Sphere"), "mainSphere"], 90, idxTYPE_KEYFRAME_RAY, 5)
+	,
+	makeKeyFrame([getObjectTypeByName("Spot"), "mainLight"], 0, idxTYPE_KEYFRAME_POSITION, makePoint(2, 7, -1)),
+	makeKeyFrame([getObjectTypeByName("Spot"), "mainLight"], 50, idxTYPE_KEYFRAME_POSITION, makePoint(10, 7, 10)),
+	makeKeyFrame([getObjectTypeByName("Spot"), "mainLight"], 99, idxTYPE_KEYFRAME_POSITION, makePoint(2, 7, -1))
+];
+
+function getKeyFrame(objectPath=null)
+{
+	var keyframe = [];
+	var len;
+	var i;
+
+	if (!objectPath)
+		return (globalKeyframe);
+	len = globalKeyframe.length;
+	i = -1;
+	while (++i < len)
+		if (globalKeyframe[i][idxKEYFRAME_OBJECTPATH][idxOBJECTPATH_TYPE] == objectPath[idxOBJECTPATH_TYPE] &&
+			globalKeyframe[i][idxKEYFRAME_OBJECTPATH][idxOBJECTPATH_NAME] == objectPath[idxOBJECTPATH_NAME])
+			keyframe.push(globalKeyframe[i]);
+	return (keyframe);
+}
+
+function redFilter(vec)
+{
+	var red = [ 0, 0, 0 ];
+	red[idxRED] = parseInt(vec[idxRED] * 1);
+	red[idxGREEN] = parseInt(vec[idxGREEN] * 0);
+	red[idxBLUE] = parseInt(vec[idxBLUE] * 0);
+	return (red);
+	vec[idxRED] *= 1;
+	vec[idxGREEN] *= 0;
+	vec[idxBLUE] *= 0;
+	return (vec);
+	vec[idxRED] *= 1.2;
+	vec[idxGREEN] *= 0.8;
+	vec[idxBLUE] *= 0.8;
+	return (vec);
+}
+
+function blueFilter(vec)
+{
+	var blue = [ 0, 0, 0 ];
+	blue[idxRED] = parseInt(vec[idxRED] * 0);
+	blue[idxGREEN] = parseInt(vec[idxGREEN] * 0);
+	blue[idxBLUE] = parseInt(vec[idxBLUE] * 1);
+	return (blue);
+	vec[idxRED] *= 0;
+	vec[idxGREEN] *= 0;
+	vec[idxBLUE] *= 1;
+	return (vec);
+	vec[idxRED] *= 0.8;
+	vec[idxGREEN] *= 0.8;
+	vec[idxBLUE] *= 1.2;
+	return (vec);
+}
+
+function convertAScreenVectorToColor()
+{ // J'ai vu mais la flemme
+	var v = globalVariables;
+	var offset;
+	var height;
+	var width;
+	var x;
+	var y;
+	var currentCamera = v;
+
+	height = currentCamera[idxVSCREENDIMENSION][idxHEIGHT];
+	width = currentCamera[idxVSCREENDIMENSION][idxWIDTH];
+	y = -1;
+	offset = -1;
+	while (++y < height)
+	{
+		x = -1;
+		while (++x < width)
+		{
+			offset = y * width + x;
+			currentCamera[idxASCREEN][offset] = vecToColor(currentCamera[idxASCREEN][offset]); // J'ai vu mais la flemme
+		}
+	}
+}
+
+function mergeAnaglyph(dstScreen, scrA, scrB)
+{ // J'ai vu mais la flemme
+	var v = globalVariables;
+	var offset;
+	var height;
+	var width;
+	var x;
+	var y;
+	var currentCamera = v;
+
+	height = currentCamera[idxVSCREENDIMENSION][idxHEIGHT];
+	width = currentCamera[idxVSCREENDIMENSION][idxWIDTH];
+	y = -1;
+	offset = -1;
+	while (++y < height)
+	{
+		x = -1;
+		while (++x < width)
+		{
+			let pixA;
+			let pixB;
+			let mixedColor;
+
+			offset = y * width + x;
+			pixA = scrA[offset];
+			pixB = scrB[offset];
+			mixedColor = [
+				parseInt((pixA[0] + pixB[0]) / 2),
+				parseInt((pixA[1] + pixB[1]) / 2),
+				parseInt((pixA[2] + pixB[2]) / 2)
+			];
+			dstScreen[offset] = mixedColor; // J'ai vu mais la flemme
+		}
+	}
+}
+
+function setAScreenVectorZero()
+{ // J'ai vu mais la flemme
+	var v = globalVariables;
+	var offset;
+	var height;
+	var width;
+	var x;
+	var y;
+	var currentCamera = v;
+
+	height = currentCamera[idxVSCREENDIMENSION][idxHEIGHT];
+	width = currentCamera[idxVSCREENDIMENSION][idxWIDTH];
+	y = -1;
+	offset = -1;
+	while (++y < height)
+	{
+		x = -1;
+		while (++x < width)
+		{
+			offset = y * width + x;
+			currentCamera[idxASCREEN][offset] = [0,0,0]; // J'ai vu mais la flemme
+		}
+	}
+}
+
+function render(aObject, aLight)
+{
+	var v = globalVariables;
+	var currentCamera = v;
+
+	renderKeyframe(getKeyFrame(), globalClock);
+	setAScreenVectorZero(currentCamera[idxASCREEN]);
+	if (globalAnaglyph[idxANAGLYPH_ACTIVE])
+	{
+		setAScreenVectorZero(currentCamera[idxASCREEN_RED]);
+		setAScreenVectorZero(currentCamera[idxASCREEN_BLUE]);
+		render_anaglyph(aObject, aLight, currentCamera);
+		mergeAnaglyph(
+			currentCamera[idxASCREEN],
+			currentCamera[idxASCREEN_BLUE],
+			currentCamera[idxASCREEN_RED],
+		);
+	}
+	else
+	{
+		render_normal(aObject, aLight, currentCamera);
+	}
+	convertAScreenVectorToColor(currentCamera[idxASCREEN]); // Anaglyph
+	if (!globalPause && ++globalClock >= globalMaxClock)
+		globalClock = 0;
+}
+
+function render_normal(aObject, aLight, currentCamera)
+{
+	var v = globalVariables;
+	var offset;
+	var height;
+	var width;
+	var x;
+	var y;
+	var currentCamera = v;
+
+	//renderKeyframe(getKeyFrame(), globalClock);
+	height = currentCamera[idxVSCREENDIMENSION][idxHEIGHT];
+	width = currentCamera[idxVSCREENDIMENSION][idxWIDTH];
+	y = -1;
+	offset = -1;
+	//setAScreenVectorZero(currentCamera[idxASCREEN]);
+	while (++y < height)
+	{
+		x = -1;
+		while (++x < width)
+		{
+			offset = y * width + x;
+			currentCamera[idxASCREEN][offset] = raytrace(aObject, aLight, currentCamera[idxVPOS], currentCamera[idxARAYS][offset], 5, 0);;
+		}
+	}
+	if (globalAnaglyph[idxANAGLYPH_ACTIVE]) // Anaglyph
+		mergeAnaglyph(
+			currentCamera[idxASCREEN],
+			currentCamera[idxASCREEN_BLUE],
+			currentCamera[idxASCREEN_RED],
+		);
+	/*convertAScreenVectorToColor(currentCamera[idxASCREEN]); // Anaglyph
+	if (!globalPause && ++globalClock >= globalMaxClock)
+		globalClock = 0;*/
+}
+
+function render_anaglyph(aObject, aLight, currentCamera)
+{
+	var v = globalVariables;
+	var offset;
+	var height;
+	var width;
+	var x;
+	var y;
+	var currentCamera = v;
+	var anaglyphZ_max;
+	var anaglyphZ;
+
+	height = currentCamera[idxVSCREENDIMENSION][idxHEIGHT];
+	width = currentCamera[idxVSCREENDIMENSION][idxWIDTH];
+	y = -1;
+	offset = -1;
+	anaglyphZ_max = globalAnaglyph[idxANAGLYPH_Z];
+	while (++y < height)
+	{
+		x = -1;
+		while (++x < width)
+		{
+			offset = y * width + x;
+			let pixel = raytrace(aObject, aLight, currentCamera[idxVPOS], currentCamera[idxARAYS][offset], 5, 0);
+			// Dynamic anaglyph
+			//anaglyphZ = -Math.sqrt(firstIntersectionDistance) + anaglyphZ_max;
+			anaglyphZ = anaglyphZ_max;
+			if (anaglyphZ < 1)
+				anaglyphZ = 1;
+			if (true || x + anaglyphZ < width)
+			{
+				let offset_b = y * width + (x + anaglyphZ);
+				currentCamera[idxASCREEN_BLUE][offset_b] = blueFilter(pixel);
+			}
+			if (true || x - anaglyphZ >= 0)
+			{
+				let offset_r = y * width + (x - anaglyphZ);
+				currentCamera[idxASCREEN_RED][offset_r] = redFilter(pixel);
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+
+var helpWindowStatus = false;
+function toggleHelp()
+{
+	helpWindowStatus = !helpWindowStatus;
+	var help = document.getElementById('helpWindow');
+	if (helpWindowStatus)
+		help.setAttribute("style", "display: block;");
+	else
+		help.setAttribute("style", "display: none;");
+}
+
+const queryUI_OBJECTS = {
+	wrap: 		' #config #objects',
+	type:		' select',
+	name:		' .id',
+	position:	' .position',
+	radius:		' .radius',
+	color:		' .color',
+	list: 		' ul'
+};
+
+const queryUI_LIGHT = {
+	wrap: 		' #config #lights',
+	type:		' select',
+	name:		' .id',
+	position:	' .position',
+	radius:		' .radius',
+	color:		' .color',
+	list: 		' ul'
+};
+
+const queryUI_JSON = {
+	wrap: 		' #config #json',
+	input:		' .input',
+	output:		' .output',
+};
+
+const queryUI_CAMERA = {
+	wrap: 		' #config #camera',
+	position: 	' .position',
+	direction: 	' .direction'
+};
+
+function deleteObject(objectIndex)
+{
+	var aObject = getObject();
+	aObject.splice(objectIndex, 1);
+	refresh();
+}
+
+function deleteLight(lightIndex)
+{
+	var aLight = getLight();
+	aLight.splice(lightIndex, 1);
+	refresh();
+}
+
+/**
+ * Produit une vue a partir d'une liste d'objets.
+*/
+function UIdisplayObject(aObject, elementList, deleteFunction)
+{
+	var i;
+	var objectNumber;
+	var node;
+
+	if (!(node = elementList))
+		return ;
+	node.innerHTML = "";
+	objectNumber = aObject.length;
+	i = -1;
+	while (++i < objectNumber)
+	{
+		let element = document.createElement("li");
+		element.className = "obj-" + i;
+		let obj = aObject[i];
+		let set = {
+			type:		getObjectTypeName(obj[idxOBJECT_TYPE]),
+			name:		obj[idxOBJECT_NAME],
+			ray:		obj[idxOBJECT_RAY],
+			position:	obj[idxOBJECT_VPOS],
+			color:		obj[idxOBJECT_VCOLOR]
+		};
+		let subElement = document.createElement('p');
+		subElement.append("[" + i + "] " + '"' + set.name + '" Type: ' + set.type);
+		element.appendChild(subElement);
+
+		subElement = document.createElement('p');
+		subElement.append('Ray: ' + set.ray.toString());
+		element.appendChild(subElement);
+
+		subElement = document.createElement('p');
+		subElement.append('Position: ' + set.position.toString());
+		element.appendChild(subElement);
+		
+		subElement = document.createElement('p');
+		let subColorElement = document.createElement('div');
+		subColorElement.style = 'rgb('+set.color.toString()+')';
+		subColorElement.append('Color: ' + set.color.toString());
+		subElement.appendChild(subColorElement);
+
+		element.appendChild(subElement);
+
+		let deleteButton = document.createElement('div');
+		deleteButton.className = 'delete';
+		deleteButton.setAttribute('onclick', deleteFunction + '('+i+')');
+		deleteButton.append('Supprimer');
+
+		element.appendChild(deleteButton);
+		node.appendChild(element);
+	}
+}
+
+function hexToRgb(hexColor)
+{
+	var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+	hexColor = hexColor.replace(shorthandRegex, function(m, r, g, b){
+		return (r + r + g + g + b + b);
+	});
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexColor);
+	return (result ? [
+		parseInt(result[1], 16),
+		parseInt(result[2], 16),
+		parseInt(result[3], 16)
+	] : null);
+}
+
+function exportWorldJSON()
+{
+	var input = document.querySelector(queryUI_JSON.wrap + queryUI_JSON.output);
+	var aKeyframe = getKeyFrame();
+	var aLight = getLight();
+	var aObject = getObject();
+	var aCamera = getCamera();
+	var v = globalVariables;
+	var json;
+
+	json = JSON.stringify([
+		v[idxVPOS],
+		v[idxVAXIS],
+		v[idxVSCREENDIMENSION],
+		aKeyframe,
+		globalSelectedCamera,
+		aCamera,
+		aObject,
+		aLight
+	]);
+	input.innerHTML = json;
+}
+
+function setWorldJSON()
+{
+	var input = document.querySelector(queryUI_JSON.wrap + queryUI_JSON.input);
+	var json = JSON.parse(input.value);
+	var aLight = getLight();
+	var aObject = getObject();
+	
+	if (json.length == 8)
+	{
+		globalVariables[idxVPOS] = json[0];
+		globalVariables[idxVAXIS] = json[1];
+		globalVariables[idxVSCREENDIMENSION] = json[2];
+		globalKeyframe = json[3]
+		globalSelectedCamera = json[4];
+		globalCamera = json[5];
+		globalObject = json[6];
+		globalLight = json[7];
+	}
+	else if (json.length == 2)
+	{
+		globalObject = json[0];
+		globalLight = json[1];
+	}
+	UIdisplayObject(aObject, document.querySelector(queryUI_OBJECTS.wrap + queryUI_OBJECTS.list), 'deleteObject');
+	UIdisplayObject(aLight, document.querySelector(queryUI_LIGHT.wrap + queryUI_LIGHT.list), 'deleteLight');
+}
+
+function UIuserCreateNewObject()
+{
+	var inputType = document.querySelector(queryUI_OBJECTS.wrap + queryUI_OBJECTS.type);
+	var inputName = document.querySelector(queryUI_OBJECTS.wrap + queryUI_OBJECTS.name + " input");
+	var inputPosition = document.querySelectorAll(queryUI_OBJECTS.wrap + queryUI_OBJECTS.position + " input");
+	var inputRadius = document.querySelector(queryUI_OBJECTS.wrap + queryUI_OBJECTS.radius);
+	var inputColor = document.querySelector(queryUI_OBJECTS.wrap + queryUI_OBJECTS.color);
+
+	var newObject = [0,0,0,0,0,0,0];
+	newObject[idxOBJECT_TYPE] = parseInt(inputType.value); // Type
+	newObject[idxOBJECT_NAME] = inputName.value; // Name
+	newObject[idxOBJECT_VPOS] = [ // Position
+			parseFloat(inputPosition[idxAXIS_X].value),
+			parseFloat(inputPosition[idxAXIS_Y].value),
+			parseFloat(inputPosition[idxAXIS_Z].value)
+	];
+	newObject[idxOBJECT_RAY] = parseFloat(inputRadius.value); // Radius
+	newObject[idxOBJECT_VCOLOR] = hexToRgb(inputColor.value); // Color
+
+	var aObject = getObject();
+	//aObject.push(newObject);
+	globalObject.push(newObject);
+	UIdisplayObject(getObject(), document.querySelector(queryUI_OBJECTS.wrap + queryUI_OBJECTS.list), 'deleteObject');
+}
+
+function UIuserCreateNewLight()
+{
+	var inputType = document.querySelector(queryUI_LIGHT.wrap + queryUI_LIGHT.type);
+	var inputName = document.querySelector(queryUI_LIGHT.wrap + queryUI_LIGHT.name);
+	var inputPosition = document.querySelectorAll(queryUI_LIGHT.wrap + queryUI_LIGHT.position + " input");
+	var inputRadius = document.querySelector(queryUI_LIGHT.wrap + queryUI_LIGHT.radius);
+	var inputColor = document.querySelector(queryUI_LIGHT.wrap + queryUI_LIGHT.color);
+
+	var newObject = [0,0,0,0,0,0];
+	newObject[idxOBJECT_TYPE] = parseInt(inputType.value); // Type
+	newObject[idxOBJECT_NAME] = inputName.value; // Name
+	newObject[idxOBJECT_VPOS] = [ // Position
+			parseFloat(inputPosition[idxAXIS_X].value),
+			parseFloat(inputPosition[idxAXIS_Y].value),
+			parseFloat(inputPosition[idxAXIS_Z].value)
+	];
+	newObject[idxOBJECT_RAY] = parseFloat(inputRadius.value); // Radius
+	newObject[idxOBJECT_VCOLOR] = hexToRgb(inputColor.value); // Color
+
+	var aLight = getLight();
+	//aLight.push(newObject);
+	globalLight.push(newObject);
+	UIdisplayObject(getLight(), document.querySelector(queryUI_LIGHT.wrap + queryUI_LIGHT.list), 'deleteObject');
+}
+
+function UIuserSetCamera()
+{
+	var inputPosition = document.querySelectorAll(queryUI_CAMERA.wrap + queryUI_CAMERA.position + " input"); 
+	var inputDirection = document.querySelectorAll(queryUI_CAMERA.wrap + queryUI_CAMERA.direction + " input"); 
+	var camera = getCamera(globalSelectedCamera);
+	camera[idxCAMERA_VPOS][idxAXIS_X] = parseFloat(inputPosition[idxAXIS_X].value);
+	camera[idxCAMERA_VPOS][idxAXIS_Y] = parseFloat(inputPosition[idxAXIS_Y].value);
+	camera[idxCAMERA_VPOS][idxAXIS_Z] = parseFloat(inputPosition[idxAXIS_Z].value);
+	if (!inputDirection[idxAXIS_X].value.length ||
+		!inputDirection[idxAXIS_X].value.length ||
+		!inputDirection[idxAXIS_X].value.length)
+		camera[idxCAMERA_VAXIS] = makeAxis();
+	else
+	{
+		var objPos = [
+			parseFloat(inputDirection[idxAXIS_X].value),
+			parseFloat(inputDirection[idxAXIS_Y].value),
+			parseFloat(inputDirection[idxAXIS_Z].value)
+		];
+		var objDir = vNormalize(vSubstract(objPos, camera[idxCAMERA_VPOS]));
+		var rightVector = vInverse(vNormalize(crossProd(objDir, [ 0, 1, 0 ])));
+		camera[idxCAMERA_VAXIS][idxAXIS_FRONT] = objDir;
+		camera[idxCAMERA_VAXIS][idxAXIS_RIGHT] = rightVector;
+		camera[idxCAMERA_VAXIS][idxAXIS_TOP] = vNormalize(crossProd(objDir, rightVector));
+	}
+	refresh();
+}
+
+/*****************************************************************************/
+
+const keyboard_qwerty =
+{
+	left: 97,
+	right: 100,
+	up: 119,
+	down: 115,
+	pause: 112,
+	shift_front: 111, // o
+	shift_back: 108, // l
+	shift_left: 107, // k
+	shift_right: 59, // ;
+	shift_up: 99, // c
+	shift_down: 113, // a
+	pixelBigger: 61, //:
+	pixelSmaller: 45, // -
+	screenWidthBigger: 54, // 6
+	screenWidthSmaller: 52, // 4
+	screenHeightBigger: 50, // 2
+	screenHeightSmaller: 56, // 8
+	screenBigger: 51, // 3
+	screenSmaller: 55, // 7
+	toggleAnaglyph: 53, // 5
+	anaglyphSmaller: 49, // 1
+	anaglyphLarger: 57 // 9
+};
+
+const keyboard_azerty =
+{
+	left: 113,
+	right: 100,
+	up: 122,
+	down: 115,
+	pause: 112,
+	shift_front: 111, // o
+	shift_back: 108, // l
+	shift_left: 107, // k
+	shift_right: 109, // ;
+	shift_up: 99, // c
+	shift_down: 97, // a
+	pixelBigger: 61, //:
+	pixelSmaller: 45, // -
+	screenWidthBigger: 54, // 6
+	screenWidthSmaller: 52, // 4
+	screenHeightBigger: 50, // 2
+	screenHeightSmaller: 56, // 8
+	screenBigger: 51, // 3
+	screenSmaller: 55, // 7
+	toggleAnaglyph: 53, // 5
+	anaglyphSmaller: 49, // 1
+	anaglyphLarger: 57 // 9
+};
+
+const keyboard_list =
+{
+	"english": keyboard_qwerty,
+	"french": keyboard_azerty
+}
+
+function getKeyboard()
+{
+	return (document.getElementById('keyboard').value);
+}
+
+window.addEventListener('keydown', function(e) {
+  if(e.keyCode == 32 && e.target == document.body) {
+    e.preventDefault();
+  }
+});
+
+function init()
+{
+	var v = globalVariables;
+	var currentCamera = v;
+
+	document.onkeyup = function (e) {
+		let kb = keyboard_list[getKeyboard()];
+		switch (e.keyCode)
+		{
+			case kb['space']: // Space
+				var currentWindow = browser.windows.getCurrent();
+				currentWindow.moveTo(0, 0);
+				alert('keyup');
+				break;
+		}
+	}
+
+	document.onkeypress = function (e) {
+		var camera = getCamera(globalSelectedCamera);
+		var defaultColor = "black";
+		let colorize = false;
+		let kb = keyboard_list[getKeyboard()];
+		//
+		var rotAngle = 5;
+		var translatePad = 0.2;
+		switch (e.keyCode)
+		{
+			case kb['pause']:
+				globalPause = !globalPause;
+				break;
+			// Rotation
+			case kb['up']: // 0
+				camera[idxCAMERA_VAXIS][idxAXIS_FRONT] = rotVec(camera[idxCAMERA_VAXIS][idxAXIS_RIGHT], camera[idxCAMERA_VAXIS][idxAXIS_FRONT], degToRad(-rotAngle));
+				camera[idxCAMERA_VAXIS][idxAXIS_TOP] = rotVec(camera[idxCAMERA_VAXIS][idxAXIS_RIGHT], camera[idxCAMERA_VAXIS][idxAXIS_TOP], degToRad(-rotAngle));
+				break;
+			case kb['right']: // 1
+				camera[idxCAMERA_VAXIS][idxAXIS_FRONT] = rotVec([0, 1, 0], camera[idxCAMERA_VAXIS][idxAXIS_FRONT], degToRad(-rotAngle));
+				camera[idxCAMERA_VAXIS][idxAXIS_RIGHT] = rotVec([0, 1, 0], camera[idxCAMERA_VAXIS][idxAXIS_RIGHT], degToRad(-rotAngle));
+				camera[idxCAMERA_VAXIS][idxAXIS_TOP] = rotVec([0, 1, 0], camera[idxCAMERA_VAXIS][idxAXIS_TOP], degToRad(-rotAngle));
+				/*currentCamera[const_vAxis][const_axis_front] = rotVec(currentCamera[const_vAxis][const_axis_top], currentCamera[const_vAxis][const_axis_front], degToRad(-rotAngle)); // Plane
+				currentCamera[const_vAxis][const_axis_right] = rotVec(currentCamera[const_vAxis][const_axis_top], currentCamera[const_vAxis][const_axis_right], degToRad(-rotAngle));*/
+				break;
+			case kb['down']: // 2
+				camera[idxCAMERA_VAXIS][idxAXIS_FRONT] = rotVec(camera[idxCAMERA_VAXIS][idxAXIS_RIGHT], camera[idxCAMERA_VAXIS][idxAXIS_FRONT], degToRad(rotAngle));
+				camera[idxCAMERA_VAXIS][idxAXIS_TOP] = rotVec(camera[idxCAMERA_VAXIS][idxAXIS_RIGHT], camera[idxCAMERA_VAXIS][idxAXIS_TOP], degToRad(rotAngle));
+				break;
+			case kb['left']: // 3
+				camera[idxCAMERA_VAXIS][idxAXIS_FRONT] = rotVec([0, 1, 0], camera[idxCAMERA_VAXIS][idxAXIS_FRONT], degToRad(rotAngle));
+				camera[idxCAMERA_VAXIS][idxAXIS_RIGHT] = rotVec([0, 1, 0], camera[idxCAMERA_VAXIS][idxAXIS_RIGHT], degToRad(rotAngle));
+				camera[idxCAMERA_VAXIS][idxAXIS_TOP] = rotVec([0, 1, 0], camera[idxCAMERA_VAXIS][idxAXIS_TOP], degToRad(rotAngle));
+				/*currentCamera[const_vAxis][const_axis_front] = rotVec(currentCamera[const_vAxis][const_axis_top], currentCamera[const_vAxis][const_axis_front], degToRad(rotAngle)); // Plane
+				currentCamera[const_vAxis][const_axis_right] = rotVec(currentCamera[const_vAxis][const_axis_top], currentCamera[const_vAxis][const_axis_right], degToRad(rotAngle));*/
+				break;
+			// Translation
+			case kb['shift_front']: // o
+				camera[idxCAMERA_VPOS] = vAdd(camera[idxCAMERA_VPOS], vMultiply(camera[idxCAMERA_VAXIS][idxAXIS_FRONT], translatePad));
+				break;
+			case kb['shift_back']: // l
+				camera[idxCAMERA_VPOS] = vAdd(camera[idxCAMERA_VPOS], vMultiply(camera[idxCAMERA_VAXIS][idxAXIS_FRONT], -translatePad));
+				break;
+			case kb['shift_left']: // k
+				camera[idxCAMERA_VPOS] = vAdd(camera[idxCAMERA_VPOS], vMultiply(camera[idxCAMERA_VAXIS][idxAXIS_RIGHT], translatePad));
+				break;
+			case kb['shift_right']: // ;
+				camera[idxCAMERA_VPOS] = vAdd(camera[idxCAMERA_VPOS], vMultiply(camera[idxCAMERA_VAXIS][idxAXIS_RIGHT], -translatePad));
+				break;
+			case kb['shift_up']: // space
+				camera[idxCAMERA_VPOS] = vAdd(camera[idxCAMERA_VPOS], vMultiply(camera[idxCAMERA_VAXIS][idxAXIS_TOP], translatePad));
+				break;
+			case kb['shift_down']: // space
+				camera[idxCAMERA_VPOS] = vAdd(camera[idxCAMERA_VPOS], vMultiply(camera[idxCAMERA_VAXIS][idxAXIS_TOP], -translatePad));
+				break;
+			// Pixels
+			case kb['pixelBigger']:
+				globalPixelSize++;
+				//colorize = defaultColor;
+				break;
+			case kb['pixelSmaller']:
+				globalPixelSize--;
+				if (globalPixelSize < 5)
+					globalPixelSize = 5;
+				//colorize = defaultColor;
+				break;
+			// Screen
+			case kb['screenWidthBigger']:
+				globalScreenWidth++;
+				camera[idxCAMERA_VDIM][idxWIDTH] = globalScreenWidth;
+				break;
+			case kb['screenWidthSmaller']:
+				globalScreenWidth--;
+				if (globalScreenWidth < 5)
+					globalScreenWidth = 5;
+				camera[idxCAMERA_VDIM][idxWIDTH] = globalScreenWidth;
+				break;
+			case kb['screenHeightBigger']:
+				globalScreenHeight++;
+				camera[idxCAMERA_VDIM][idxHEIGHT] = globalScreenHeight;
+				break;
+			case kb['screenHeightSmaller']:
+				globalScreenHeight--;
+				if (globalScreenHeight < 5)
+					globalScreenHeight = 5;
+				camera[idxCAMERA_VDIM][idxHEIGHT] = globalScreenHeight;
+				break;
+			case kb['screenBigger']:
+				globalScreenWidth++;
+				globalScreenHeight++;
+				camera[idxCAMERA_VDIM][idxWIDTH] = globalScreenWidth;
+				camera[idxCAMERA_VDIM][idxHEIGHT] = globalScreenHeight;
+				break;
+			case kb['screenSmaller']:
+				globalScreenWidth--;
+				globalScreenHeight--;
+				if (globalScreenWidth < 5)
+					globalScreenWidth = 5;
+				if (globalScreenHeight < 5)
+					globalScreenHeight = 5;
+				camera[idxCAMERA_VDIM][idxWIDTH] = globalScreenWidth;
+				camera[idxCAMERA_VDIM][idxHEIGHT] = globalScreenHeight;
+				break;
+			case kb['toggleAnaglyph']:
+				if (globalAnaglyph[idxANAGLYPH_ACTIVE])
+					globalAnaglyph[idxANAGLYPH_ACTIVE] = false;
+				else
+					globalAnaglyph[idxANAGLYPH_ACTIVE] = true;
+				break;
+			case kb['anaglyphLarger']:
+				globalAnaglyph[idxANAGLYPH_Z]++;
+				if (globalAnaglyph[idxANAGLYPH_Z] >= 8)
+					globalAnaglyph[idxANAGLYPH_Z] = 8;
+				break;
+			case kb['anaglyphSmaller']:
+				globalAnaglyph[idxANAGLYPH_Z]--;
+				if (globalAnaglyph[idxANAGLYPH_Z] < 1)
+					globalAnaglyph[idxANAGLYPH_Z] = 1;
+				break;
+			default:
+				colorize = "blue";
+		}
+		displayConsole(e.keyCode, colorize);
+		refresh();
+		let doRender = false;
+		if (colorize == false)
+			doRender = true;
+		if (doRender)
+			UIroot.render(pixelMapToJSX(currentCamera[idxASCREEN], currentCamera[idxVSCREENDIMENSION][idxWIDTH], currentCamera[idxVSCREENDIMENSION][idxHEIGHT], globalPixelSize));
+		shiftPageTitle();
+	};
+
+	var interval = globalClockInterval;
+	window.setInterval(() => {
+		if (globalPause)
+			return ;
+		refresh();
+		UIroot.render(pixelMapToJSX(currentCamera[idxASCREEN], currentCamera[idxVSCREENDIMENSION][idxWIDTH], currentCamera[idxVSCREENDIMENSION][idxHEIGHT], globalPixelSize));
+	}, interval);
+}
+
+function displayConsole(keycode=null, colorize=false)
+{
+	var v = globalVariables;
+	var debugString;
+
+	debugString = "#KeyCode: " + keycode + '<br>';
+	if (colorize)
+		debugString += "<style>p {color: "+(colorize ? colorize : "black")+";}</style>";
+	debugString += "X : " + v[idxVPOS][0] + "<br>";
+	debugString += "Y : " + v[idxVPOS][1] + "<br>";
+	debugString += "Z : " + v[idxVPOS][2] + "<br>";
+	debugString += "dirX : " + v[idxVAXIS][idxAXIS_FRONT][0] + "<br>";
+	debugString += "dirY : " + v[idxVAXIS][idxAXIS_FRONT][1] + "<br>";
+	debugString += "dirZ : " + v[idxVAXIS][idxAXIS_FRONT][2] + "<br>";
+
+	document.getElementById('console').innerHTML = debugString; // Debug
+}
+
+/*****************************************************************************/
+
+function pixelMapToJSX(pix, dimX, dimY, dimPix)
+{
+	let score;
+	let css;
+	let lineHeight;
+
+	lineHeight = 11;
+	if (globalPixelSize < 11)
+		lineHeight = 0;
+
+	if (!pix)
+		return <p className='crash'>Fatal error</p>;
+	//css = makeCss(pix, makeColorTable, gameStatus);
+	css = ".pixelmap { display: block; width: "+(dimX * dimPix)+"px; height: "+(dimY * dimPix)+"px; line-height: "+lineHeight+"px; }"
+	css += ".pixelmap div { display: inline-block; width: "+globalPixelSize+"px; height: "+globalPixelSize+"px; }"
+	//css += "#reset {display:block; font-size: 4em; padding: 5px; font-family: Courier;border: 8px solid gray;height: 30%;line-height: calc(30% + 16px);letter-spacing:1vw;left:30%;top:30%;}\n";
+	css += "#console { width: 100vw; }"
+	return (
+		<div className='pixelmap'>
+			<style>{css}</style>
+			{
+				pix.map
+				(
+					(pixelColor,i) => ( <div key={i} style={{backgroundColor: pixelColor}}></div> ) // Color table
+				)
+			}
+		</div>
+		
+	);
+}
+
+	function shiftString(str, offset)
+	{
+		var shifted;
+		var i;
+		
+		offset = Math.abs(offset);
+		shifted = "";
+		i = offset - 1;
+		while (++i < str.length)
+			shifted += str.charAt(i);
+		i = -1;
+		while (++i < offset)
+			shifted += str.charAt(i);
+		return (shifted);
+	}
+
+	var pageTitleOffset = 0;
+	function shiftPageTitle() {
+		var title = "RTjs";
+		document.getElementById('timerDisplay').innerHTML=shiftString(title, pageTitleOffset);
+		pageTitleOffset += 1;
+		if (pageTitleOffset == title.length)
+			pageTitleOffset = 0;
+	}
+
+	const UIroot = ReactDOM.createRoot(document.getElementById("root"));
+	const UIheader = ReactDOM.createRoot(document.getElementById("header"));
+	reset();
+	init();
+	//console.log("intersect = " + intersectionRaySphere([0,0,0], [0,0,1], [[0,0,5], 1, [128, 128, 128]])); // Debug
+		</script>
+
+		<p id="console"></p>
+    </body>
+</html>
