@@ -2035,7 +2035,8 @@ function pixelMapToJSX(pix, dimX, dimY, dimPix)
 			pageTitleOffset = 0;
 	}
 	
-	import { createRoot } from 'react-dom/client';
+	//import { createRoot } from 'react-dom/client';
+	import { ReactDOM } from 'react-dom/client';
 	const UIroot = ReactDOM.createRoot(document.getElementById("root"));
 	const UIheader = ReactDOM.createRoot(document.getElementById("header"));
 	reset();
