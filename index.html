@@ -235,12 +235,12 @@
 			var timeout = 20;
 			const style = document.createElement('style');
             document.head.appendChild(style);
+			importWave();
 			style.textContent = `
                     polyline {
                         stroke: rgb(`+lineR+`, `+lineG+`, `+lineB+`);
                     }
                 `;
-			importWave();
 			setInterval(refreshSvg, timeout);
 			var css_redFg = randomIntFromInterval(0, 255);
 			var css_greenFg = randomIntFromInterval(0, 255);
