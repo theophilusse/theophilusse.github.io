@@ -24,8 +24,8 @@
 			var rand4 = Math.random() * 9;
 			var rand5 = Math.random() * 8;
 			var rand6 = Math.random() * 2 + 1;
-			var rand7 = randomIntFromInterval(10);
-			var rand8 = randomIntFromInterval(10);
+			var rand7 = randomIntFromInterval(0, 10) + 20;
+			var rand8 = randomIntFromInterval(0, 10) + 18;
 			var rand9 = (Math.random() * 100) / 1000.0;
 			function waves(x, oscillationNumber)
 			{
@@ -125,8 +125,8 @@
 				var svgName = 'svgBg';
 				var rootSvg = document.createElement('svg');
 				rootSvg.setAttribute('id', svgName);
-				var dimX = rand7 + 20;
-				var dimY = rand8 + 18;
+				var dimX = rand7;
+				var dimY = rand8;
 				var scale = 50;
 				var point = createGrid(dimX, dimY, scale, clock);
 				var svgCopy;
@@ -139,7 +139,6 @@
 				var coordY = 0;
 				var index = 0;
 
-				console.log(point)
 				while (index < polyline.length)
 				{
 					coordX++;
